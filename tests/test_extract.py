@@ -321,22 +321,30 @@ class TestExtractPolygons:
 @pytest.mark.network
 class TestNetwork:
     def test_extract_points_from_real_dem(self) -> None:
-        """Extract elevation at three real field sites from the UG 3m DEM."""
-        dem = pysdp.open_raster("R3D009", verbose=False)  # UG 3m DEM
+        """Extract elevation at a real field site from a GMUG DEM.
+
+        Uses R5D009 (GMUG 9 m bare-earth DEM) rather than the higher-res
+        UG DEMs (R3D008 at 1 m, R3D009 at 3 m) to keep this network test
+        under ~30 s. The 9 m GMUG DEM is ~64× smaller per read than the
+        3 m UG DEM. Multi-site extraction and the bilinear (`method="linear"`)
+        code path are covered by the synthetic-raster unit tests above.
+
+        At-scale extraction performance on larger rasters is tracked by
+        ROADMAP §Phase 7/8a (partition helpers + Dask-aware zonal stats).
+        """
+        dem = pysdp.open_raster("R5D009", verbose=False)  # GMUG 9 m DEM
         sites = gpd.GeoDataFrame(
-            {"site": ["Roaring Judy", "Gothic", "Galena Lake"]},
-            geometry=[
-                Point(-106.853186, 38.716995),
-                Point(-106.988934, 38.958446),
-                Point(-107.072569, 39.021644),
-            ],
+            {"site": ["Gothic"]},
+            geometry=[Point(-106.988934, 38.958446)],
             crs="EPSG:4326",
         )
-        out = pysdp.extract_points(dem, sites, verbose=False)
-        assert len(out) == 3
-        elev_col = [c for c in out.columns if "dem" in c.lower() or "elev" in c.lower()]
+        out = pysdp.extract_points(dem, sites, method="nearest", verbose=False)
+        assert len(out) == 1
+        elev_col = next(
+            (c for c in out.columns if "dem" in c.lower() or "elev" in c.lower()),
+            None,
+        )
         assert elev_col, f"no elevation column found in {list(out.columns)}"
-        elevations = out[elev_col[0]].dropna()
-        # All three sites should be 2000-4000 m in the Gunnison area.
-        assert (elevations > 2000).all()
-        assert (elevations < 4500).all()
+        elevation = out[elev_col].dropna().iloc[0]
+        # Gothic, CO sits around 2 880 m; allow generous bounds.
+        assert 2500 < elevation < 3500
