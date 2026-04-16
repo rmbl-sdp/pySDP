@@ -54,8 +54,7 @@ def test_constants_values() -> None:
     [
         # get_catalog + get_metadata implemented in Phase 1 (see test_catalog.py)
         # open_raster + open_stack implemented in Phase 3 (see test_raster.py)
-        ("extract_points", (None, None)),
-        ("extract_polygons", (None, None)),
+        # extract_points + extract_polygons implemented in Phase 4 (see test_extract.py)
         ("download", ()),
     ],
 )

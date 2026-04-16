@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 4 — Point & polygon extraction** (SPEC.md §9):
+  - `pysdp.extract_points(raster, locations, ...)` — sample raster values
+    at point locations. Accepts a `GeoDataFrame` or a plain `DataFrame`
+    with x/y columns + explicit `crs`. Auto-reprojects locations to
+    raster CRS when they differ (with a verbose message).
+    `method="linear"` (default, bilinear via `xr.interp`) or
+    `method="nearest"` (via `xvec.extract_points`).
+  - `pysdp.extract_polygons(raster, locations, stats="mean", ...)` —
+    zonal stats via `xvec.zonal_stats`. Default `exact=False` (centroid
+    inclusion, parity with rSDP / `terra::extract`). `exact=True` and
+    `all_cells=True` raise `NotImplementedError` pointing at
+    ROADMAP §Phase 8a; `exact=False` covers the common case.
+  - Port of rSDP's `.filter_raster_layers_by_time()` as
+    `_filter_by_time`: `years=` or `date_start`/`date_end=` filters for
+    time-indexed rasters, with error-on-empty-overlap and
+    warn-on-partial-overlap semantics.
+  - Output is long-form GeoDataFrame: one row per point (or polygon)
+    for single-layer rasters; one row per (geometry × time) for
+    time-series. `bind=True` (default) merges input attribute columns
+    onto the output; `bind=False` returns just geometry + extracted values.
+  - Tests: 34 new unit tests with synthetic local rasters + one
+    `@pytest.mark.network` integration test that extracts elevation at
+    three real RMBL field sites from the UG 3 m DEM (R3D009); verifies
+    elevations fall in the sensible 2000–4500 m range for the Gunnison
+    basin. All pass locally.
+  - `scipy>=1.11` added to core deps (required for xarray's
+    `interp(method='linear')`, the bilinear extraction path; standard
+    scientific Python dep).
+
 - **Phase 3 — Raster access** (SPEC.md §9):
   - `pysdp.open_raster(catalog_id, ...)` — lazy cloud COG access via
     `rioxarray.open_rasterio` over GDAL VSICURL. Returns
