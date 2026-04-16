@@ -53,6 +53,10 @@ uv.lock
 *.swo
 .DS_Store
 
+# Claude Code per-user local state (permissions, prompt history, etc.).
+# Not a secret, but per-user and not meaningful in version control.
+.claude/
+
 # Docs build
 site/
 docs/_build/
