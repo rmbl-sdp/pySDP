@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 2 — Argument validation + time-slice resolvers** (SPEC.md §9):
+  - `pysdp.io.template.substitute_template()` — `{year}`/`{month}`/`{day}`
+    URL-template substitution with scalar/vector recycling and
+    length-consistency checks. Port of rSDP's `.substitute_template()`.
+  - `pysdp._validate.validate_user_args()` — pre-catalog-lookup
+    validation; zero-pads `months` to two-digit strings; rejects
+    invalid combinations of `catalog_id`/`url`/`date_start`/`date_end`/
+    `download_files`/`download_path`.
+  - `pysdp._validate.validate_args_vs_type()` — post-lookup check for
+    whether a time-arg combo is valid for a given `TimeSeriesType`
+    (Single rejects all time args; Yearly rejects months + years∧dates;
+    Monthly requires months with years; Daily requires dates only).
+  - `pysdp._resolve.resolve_time_slices()` and per-type resolvers
+    (`resolve_single`, `resolve_yearly`, `resolve_monthly`,
+    `resolve_daily`) returning a `TimeSlices(paths, names)` named tuple.
+    Pure functions, no network, no raster I/O.
+  - Preserved behavior carry-overs from rSDP: anchor-day
+    `seq(by="year"/"month")` semantics for Yearly/Monthly date-range
+    branches; 30-layer default clip for Daily datasets with no date
+    bounds; error-on-empty-overlap; warn-on-partial-overlap.
+  - 52 new unit tests: `test_template.py` (8 tests),
+    `test_validate.py` (20 tests), `test_resolve.py` (24 tests).
+    Ports rSDP's 32 testthat tests across
+    `test-internal_resolve.R` and `test-internal_validate.R`, plus
+    additional edge-case coverage.
+
 - **Phase 1 — Catalog + metadata** (SPEC.md §9):
   - `pysdp.get_catalog()` with three sources: `packaged` (default;
     offline, emits a `UserWarning` when the snapshot is older than
