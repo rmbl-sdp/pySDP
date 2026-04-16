@@ -7,8 +7,6 @@ module graph is coherent and that the public surface matches SPEC.md §4.5.
 
 from __future__ import annotations
 
-import pytest
-
 
 def test_import_package() -> None:
     import pysdp
@@ -49,19 +47,8 @@ def test_constants_values() -> None:
     assert set(TIMESERIES_TYPES) == {"Single", "Yearly", "Seasonal", "Monthly", "Daily"}
 
 
-@pytest.mark.parametrize(
-    ("fn_name", "args"),
-    [
-        # get_catalog + get_metadata implemented in Phase 1 (see test_catalog.py)
-        # open_raster + open_stack implemented in Phase 3 (see test_raster.py)
-        # extract_points + extract_polygons implemented in Phase 4 (see test_extract.py)
-        ("download", ()),
-    ],
-)
-def test_unimplemented_stubs_raise_not_implemented(fn_name: str, args: tuple[object, ...]) -> None:
-    """Stubs for not-yet-implemented phases raise NotImplementedError."""
-    import pysdp
-
-    fn = getattr(pysdp, fn_name)
-    with pytest.raises(NotImplementedError):
-        fn(*args)
+# All public-API functions are implemented as of Phase 5:
+#   get_catalog, get_metadata           (Phase 1 — see test_catalog.py)
+#   open_raster, open_stack             (Phase 3 — see test_raster.py)
+#   extract_points, extract_polygons    (Phase 4 — see test_extract.py)
+#   download                            (Phase 5 — see test_download.py)

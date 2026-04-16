@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 5 — Bulk download** (SPEC.md §9):
+  - `pysdp.download(urls=..., output_dir=..., ...)` — fetch SDP COGs to
+    local disk. Accepts ``urls=`` (string or list) or ``catalog_ids=``
+    (mutually exclusive, exactly one required).
+  - ``catalog_ids`` expansion: Single → 1 URL; Yearly → every catalog
+    year; Monthly → every catalog month between MinDate and MaxDate.
+    Daily raises a descriptive `ValueError` (expansion would be
+    open-ended; users pass explicit ``urls=`` or open via
+    `open_raster(...)` with a date range first).
+  - Existing-file pre-check mirrors rSDP: files > 1 kB on disk are
+    considered valid and skipped unless ``overwrite=True``. Partial
+    files (< 1 kB) use HTTP Range resume when ``resume=True``.
+  - Returns a `pandas.DataFrame` status report with columns
+    ``[url, dest, success, status, size, error]`` — one row per URL
+    (including skipped existing files). ``return_status=False`` → ``None``.
+  - Backend: threaded `requests` via `concurrent.futures.ThreadPoolExecutor`
+    (core deps only). Faster backends (`obstore`, `fsspec+s3fs`) deferred
+    to ROADMAP §Phase 7.
+  - Tests: 22 unit tests (input validation, catalog_id expansion for
+    each TimeSeriesType, pre-check logic, responses-mocked end-to-end
+    flow, overwrite + resume, HTTP error propagation) + 1
+    `@pytest.mark.network` integration test that downloads R1D001
+    (~4 MB UER streamlines) from real S3 in ~1.5 s.
+  - Smoke test's `NotImplementedError` placeholder parametrize list is
+    now empty — all public API functions are implemented.
+
 - **Phase 4 — Point & polygon extraction** (SPEC.md §9):
   - `pysdp.extract_points(raster, locations, ...)` — sample raster values
     at point locations. Accepts a `GeoDataFrame` or a plain `DataFrame`
