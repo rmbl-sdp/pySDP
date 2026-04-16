@@ -279,12 +279,94 @@ def extract_points(
 ) -> gpd.GeoDataFrame:
     """Extract raster values at point locations.
 
-    See SPEC.md §4.3.
+    Accepts an ``xarray.Dataset`` or ``DataArray`` (typically from
+    :func:`open_raster` / :func:`open_stack`) and a ``GeoDataFrame`` or
+    plain ``DataFrame`` with ``x``/``y`` columns. Reprojects the input
+    locations to the raster CRS if they differ.
 
-    For time-series rasters, the output is long-form: one row per
-    (point, time). Pivot to wide with
-    ``df.pivot_table(index=<id>, columns="time", values=<varname>)`` if you
-    need the rSDP-style wide layout.
+    Parameters
+    ----------
+    raster : xarray.Dataset or xarray.DataArray
+        The raster to sample from. Must have ``x`` and ``y`` spatial
+        coordinates and a CRS set (via ``rio.write_crs``). Time-series
+        rasters (with a ``time`` dim) produce long-form output.
+    locations : GeoDataFrame or DataFrame
+        Points to sample. If a plain ``DataFrame``, pass the column names
+        via ``x=``/``y=`` and an explicit ``crs=``. If a ``GeoDataFrame``,
+        its geometry column is used and its CRS must be set.
+    x, y : str, default "x", "y"
+        Column names holding longitude/x and latitude/y for
+        ``DataFrame`` inputs. Ignored for ``GeoDataFrame`` inputs.
+    crs : str, optional
+        CRS of the input locations (e.g., ``"EPSG:4326"``). Required when
+        ``locations`` is a plain ``DataFrame``; inferred from
+        ``locations.crs`` for ``GeoDataFrame`` inputs.
+    method : {"nearest", "linear"}, default "linear"
+        Interpolation method. ``"linear"`` is bilinear via
+        ``xarray.interp`` (requires ``scipy``, a core pysdp dep).
+        ``"nearest"`` snaps to the nearest cell via ``xvec.extract_points``
+        and is substantially faster for large cloud rasters.
+    years : sequence of int, optional
+        Time filter applied before extraction. Only valid for time-series
+        rasters.
+    date_start, date_end : str or datetime.date, optional
+        Date-range filter applied before extraction.
+    bind : bool, default True
+        If ``True``, merge the input location's non-geometry columns onto
+        each output row. If ``False``, return only geometry + extracted
+        values.
+    verbose : bool, default True
+        Print per-extraction progress messages to stderr.
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        Output GeoDataFrame with the raster's data variables as columns.
+        For time-series rasters, output is **long-form** (one row per
+        ``geometry × time``) with ``time`` as a column; pivot to wide if
+        needed via ``df.pivot_table(index=..., columns="time", values=...)``.
+
+    Raises
+    ------
+    ValueError
+        If the raster has no CRS, if location CRS/columns are missing, if
+        ``method`` isn't one of the two valid values, or if time filter
+        args are passed for a non-time-indexed raster.
+
+    Examples
+    --------
+    Extract elevation at three RMBL-area field sites:
+
+    >>> import pysdp, geopandas as gpd
+    >>> from shapely.geometry import Point
+    >>> dem = pysdp.open_raster("R3D009")  # doctest: +SKIP
+    >>> sites = gpd.GeoDataFrame(
+    ...     {"site": ["Roaring Judy", "Gothic", "Galena Lake"]},
+    ...     geometry=[
+    ...         Point(-106.853186, 38.716995),
+    ...         Point(-106.988934, 38.958446),
+    ...         Point(-107.072569, 39.021644),
+    ...     ],
+    ...     crs="EPSG:4326",
+    ... )
+    >>> samples = pysdp.extract_points(dem, sites)  # doctest: +SKIP
+
+    Sample daily Tmax at the same sites and pivot to wide format:
+
+    >>> tmax = pysdp.open_raster("R4D004", date_start="2021-11-02", date_end="2021-11-04")  # doctest: +SKIP
+    >>> long = pysdp.extract_points(tmax, sites)  # doctest: +SKIP
+    >>> wide = long.pivot_table(index="site", columns="time", values="bayes_tmax_est")  # doctest: +SKIP
+
+    Extract from a plain ``DataFrame`` (no GeoPandas needed upfront):
+
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"site": ["A"], "lon": [-106.85], "lat": [38.95]})
+    >>> out = pysdp.extract_points(dem, df, x="lon", y="lat", crs="EPSG:4326")  # doctest: +SKIP
+
+    See Also
+    --------
+    extract_polygons : Summarize values over polygon geometries.
+    open_raster : Load a raster to extract from.
     """
     raster = _filter_by_time(
         raster,
@@ -371,14 +453,75 @@ def extract_polygons(
 ) -> gpd.GeoDataFrame | pd.DataFrame:
     """Summarize raster values over polygon locations.
 
-    See SPEC.md §4.3.
+    Computes per-polygon summary statistics (mean by default). For
+    time-series rasters, produces one summary per ``(polygon × time)``
+    pair in long-form output.
 
-    Default ``exact=False`` uses ``xvec.zonal_stats`` with centroid-based
-    cell inclusion (matches rSDP / ``terra::extract``). Set ``exact=True``
-    for fractional-coverage summaries via ``exactextract`` (requires the
-    ``[exact]`` extra); recommended for small polygons relative to cell size.
-    ``all_cells=True`` returns a long-form DataFrame of per-cell values
-    and coverage fractions instead of per-polygon summary stats.
+    Parameters
+    ----------
+    raster : xarray.Dataset or xarray.DataArray
+        Raster to summarize. Must have a CRS set.
+    locations : GeoDataFrame
+        Polygon geometries. Must be a ``GeoDataFrame`` (not a plain
+        ``DataFrame``) with CRS set.
+    stats : str or sequence of str, default "mean"
+        Summary statistic(s) to compute. Accepts any ``xvec.zonal_stats``
+        string (``"mean"``, ``"sum"``, ``"std"``, ``"min"``, ``"max"``,
+        ``"median"``, ``"count"``, ``"nunique"``) or a callable. Pass a
+        list for multiple stats.
+    exact : bool, default False
+        ``False`` (default) uses centroid-based cell inclusion via
+        ``xvec.zonal_stats`` — matches rSDP / ``terra::extract`` behavior.
+        ``True`` uses fractional-coverage weighting via ``exactextract``
+        (requires ``pysdp[exact]``); recommended for small polygons
+        relative to cell size. ``True`` path is a Phase 8a roadmap item and
+        currently raises ``NotImplementedError``.
+    all_cells : bool, default False
+        If ``True``, return a long-form DataFrame of per-cell values and
+        coverage fractions instead of per-polygon summary statistics. Phase
+        8a roadmap item; currently raises ``NotImplementedError``.
+    years, date_start, date_end : optional
+        Time-series filters applied before summarization. Same semantics as
+        in :func:`extract_points`.
+    bind : bool, default True
+        Merge input attribute columns onto output rows when ``True``.
+    verbose : bool, default True
+        Print progress messages.
+
+    Returns
+    -------
+    geopandas.GeoDataFrame or pandas.DataFrame
+        GeoDataFrame when ``bind=True``; DataFrame when ``bind=False``.
+        Columns include the raster's data variables (one per summary stat).
+
+    Raises
+    ------
+    TypeError
+        If ``locations`` isn't a ``GeoDataFrame``.
+    ValueError
+        On missing CRS or other location validation failures.
+    NotImplementedError
+        For ``exact=True`` or ``all_cells=True`` (roadmap items).
+
+    Examples
+    --------
+    Compute mean snow duration over watersheds for 2019:
+
+    >>> import pysdp, geopandas as gpd
+    >>> snow = pysdp.open_raster("R4D001", years=[2019])  # doctest: +SKIP
+    >>> watersheds = gpd.read_file("watersheds.gpkg")  # doctest: +SKIP
+    >>> out = pysdp.extract_polygons(snow, watersheds, stats="mean")  # doctest: +SKIP
+
+    Compute multiple statistics in one call:
+
+    >>> stats = pysdp.extract_polygons(
+    ...     snow, watersheds, stats=["mean", "std", "min", "max"]
+    ... )  # doctest: +SKIP
+
+    See Also
+    --------
+    extract_points : Extract at point geometries.
+    open_raster : Load a raster.
     """
     import geopandas as gpd
 

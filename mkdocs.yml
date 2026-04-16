@@ -84,8 +84,14 @@ nav:
   - Home: index.md
   - Getting started: getting-started.md
   - User guides:
-    - guides/index.md
+    - Overview: guides/index.md
+    - Accessing cloud data: guides/cloud-data.md
+    - Wrangling raster data: guides/wrangle-rasters.md
+    - Field-site sampling: guides/field-sampling.md
+    - Pretty maps: guides/pretty-maps.md
   - API reference: api.md
+  - Troubleshooting: troubleshooting.md
+  - Contributing: contributing.md
   - Changelog: changelog.md
 
 extra:

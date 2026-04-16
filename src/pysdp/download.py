@@ -189,35 +189,89 @@ def download(
     return_status: bool = True,
     verbose: bool = True,
 ) -> pd.DataFrame | None:
-    """Download SDP COG(s) to a local directory.
+    """Download SDP COGs to a local directory.
 
-    See SPEC.md §4.4.
+    Use this when you need the raster on disk (for tools that don't support
+    cloud reads, for offline workflows, or for bulk mirroring). For
+    interactive analysis, :func:`open_raster` lazy-reads from cloud without
+    a download step.
 
     Parameters
     ----------
-    urls, catalog_ids
-        Exactly one is required. ``catalog_ids`` resolves via the packaged
-        catalog (``Single`` → one URL; ``Yearly`` → all catalog years;
-        ``Monthly`` → all catalog months; ``Daily`` raises because
-        expansion is open-ended — pass explicit URLs instead).
-    output_dir
-        Directory where files land. Created if it doesn't exist. Required.
-    overwrite
-        ``False`` (default) skips files that already exist locally with
-        size > 1 kB (matches rSDP's heuristic). ``True`` re-downloads them.
-    resume
-        ``True`` (default) attempts an HTTP Range resume when a small
-        partial file exists at the destination.
-    max_workers
-        Parallelism for HTTP fetches (threaded requests).
-    return_status
-        If ``True`` (default), returns a ``pandas.DataFrame`` with one row
-        per URL and columns ``[url, dest, success, status, size, error]``.
-        If ``False``, returns ``None``.
+    urls : str or sequence of str, optional
+        Direct HTTPS URL(s) to the COGs to download. Mutually exclusive with
+        ``catalog_ids``; exactly one is required.
+    output_dir : str or PathLike
+        Destination directory. Created if it doesn't exist. Files are named
+        from the URL basename.
+    catalog_ids : str or sequence of str, optional
+        Alternative to ``urls``. pySDP expands each catalog_id via the
+        packaged catalog:
+
+        - ``Single`` → one URL
+        - ``Yearly`` → one URL per catalog year
+        - ``Monthly`` → one URL per catalog month between MinDate and MaxDate
+        - ``Daily`` → raises ``ValueError`` (would be thousands of files;
+          pass explicit ``urls=`` for selective daily slices)
+    overwrite : bool, default False
+        If ``False`` (default), skip destination files that already exist
+        and are > 1 kB (matches rSDP's valid-file heuristic). If ``True``,
+        re-download even if a valid file is present.
+    resume : bool, default True
+        When a small partial file exists (< 1 kB), attempt an HTTP Range
+        resume instead of re-downloading from scratch.
+    max_workers : int, default 8
+        Number of concurrent HTTP fetches (via a ``ThreadPoolExecutor``).
+    return_status : bool, default True
+        If ``True``, return a DataFrame with one row per URL. If ``False``,
+        return ``None``.
+    verbose : bool, default True
+        Print skip/download progress messages to stderr.
 
     Returns
     -------
-    pandas.DataFrame | None
+    pandas.DataFrame or None
+        Status report with columns ``url``, ``dest``, ``success``,
+        ``status`` (HTTP code or ``"exists"``), ``size`` (bytes),
+        ``error`` (str or None). One row per URL, including pre-existing
+        files that were skipped.
+
+    Raises
+    ------
+    ValueError
+        If both ``urls`` and ``catalog_ids`` are given, or neither, or if
+        ``output_dir`` is missing, or if a ``Daily`` catalog_id is passed.
+    KeyError
+        If a catalog_id isn't in the packaged catalog.
+
+    Warns
+    -----
+    UserWarning
+        If any downloads failed; details are in the returned DataFrame's
+        ``error`` column.
+
+    Examples
+    --------
+    Download two real SDP products by catalog ID:
+
+    >>> import pysdp
+    >>> status = pysdp.download(
+    ...     catalog_ids=["R1D001", "R3D009"],
+    ...     output_dir="~/sdp-data",
+    ... )  # doctest: +SKIP
+    >>> status[["dest", "success", "size"]]  # doctest: +SKIP
+
+    Hand-pick a subset of daily temperature slices:
+
+    >>> urls = [
+    ...     "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release4/bayes_tmax_year_2021_day_0305_est.tif",
+    ...     "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release4/bayes_tmax_year_2021_day_0306_est.tif",
+    ... ]
+    >>> pysdp.download(urls=urls, output_dir="~/tmax-samples")  # doctest: +SKIP
+
+    See Also
+    --------
+    open_raster : Open an SDP raster lazily, without downloading.
     """
     import pandas as pd
 

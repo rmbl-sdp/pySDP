@@ -75,27 +75,95 @@ def get_catalog(
 ) -> pd.DataFrame | pystac.Catalog:
     """Discover SDP datasets by filtering the product catalog.
 
+    pySDP ships with a snapshot of the SDP product catalog baked in; filtering
+    is instantaneous and works offline. ``source="live"`` refetches the
+    canonical CSV from S3 (useful when the packaged snapshot lags a recent
+    catalog update). ``source="stac"`` returns the SDP's static STAC v1
+    catalog as a ``pystac.Catalog``, which composes with the broader STAC
+    ecosystem.
+
     Parameters
     ----------
-    domains, types, releases, timeseries_types
-        Filter values; ``None`` means no filter on that field. Invalid values
-        raise ``ValueError`` against the canonical vocabularies in
-        ``pysdp.constants``.
-    deprecated
-        ``False`` (default) returns only current datasets; ``True`` returns
-        only deprecated ones; ``None`` returns both.
-    source
-        ``"packaged"`` (default, offline) filters the CSV snapshot shipped
-        with pysdp and emits a ``UserWarning`` if older than
-        ``SDP_STALENESS_MONTHS`` (default 6). ``"live"`` refetches the CSV
-        from S3. ``"stac"`` returns the static STAC v1 catalog as a
-        ``pystac.Catalog`` (filter args are ignored; use pystac traversal).
+    domains : sequence of str, optional
+        Spatial domains to include (``"UG"``, ``"UER"``, ``"GT"``, ``"GMUG"``).
+        See ``pysdp.DOMAINS`` for the canonical list. ``None`` (default)
+        returns every domain.
+    types : sequence of str, optional
+        Dataset type categories (e.g., ``"Vegetation"``, ``"Topo"``,
+        ``"Climate"``, ``"Snow"``). See ``pysdp.TYPES``. ``None`` returns
+        all types.
+    releases : sequence of str, optional
+        Dataset release cohorts (``"Release1"``..``"Release5"``,
+        ``"Basemaps"``). See ``pysdp.RELEASES``. ``None`` returns all.
+    timeseries_types : sequence of str, optional
+        One or more of ``"Single"``, ``"Yearly"``, ``"Monthly"``,
+        ``"Daily"``, ``"Seasonal"``. See ``pysdp.TIMESERIES_TYPES``.
+        ``None`` returns all.
+    deprecated : bool or None, default False
+        ``False`` returns only current datasets. ``True`` returns only
+        deprecated ones. ``None`` returns both.
+    source : {"packaged", "live", "stac"}, default "packaged"
+        Where to pull the catalog from. See Notes.
 
     Returns
     -------
-    pandas.DataFrame | pystac.Catalog
-        A filtered DataFrame for the CSV-backed sources; a ``pystac.Catalog``
-        for ``source="stac"``.
+    pandas.DataFrame or pystac.Catalog
+        For CSV-backed sources, a DataFrame with one row per dataset and
+        columns matching the SDP product-table schema (``CatalogID``,
+        ``Release``, ``Type``, ``Product``, ``Domain``, ``Resolution``,
+        ``Deprecated``, ``MinDate``, ``MaxDate``, ``MinYear``, ``MaxYear``,
+        ``TimeSeriesType``, ``DataType``, ``DataUnit``,
+        ``DataScaleFactor``, ``DataOffset``, ``Data.URL``, ``Metadata.URL``).
+        For ``source="stac"``, a ``pystac.Catalog`` rooted at the SDP's
+        static STAC v1 catalog.
+
+    Raises
+    ------
+    ValueError
+        If any filter argument contains a value outside its canonical
+        vocabulary, or if ``source`` isn't one of the three valid options.
+
+    Warns
+    -----
+    UserWarning
+        When ``source="packaged"`` and the packaged snapshot is older than
+        ``SDP_STALENESS_MONTHS`` months (default 6; env-configurable). The
+        warning suggests ``source="live"`` or a pysdp upgrade.
+
+    Notes
+    -----
+    The packaged CSV is refreshed on each pysdp release. ``source="live"``
+    hits the S3-hosted canonical CSV directly, so it's always as fresh as
+    upstream. ``source="stac"`` ignores filter arguments — use pystac
+    traversal to filter the returned catalog. The catalog is browsable at
+    `radiantearth's STAC Browser
+    <https://radiantearth.github.io/stac-browser/#/external/rmbl-sdp.s3.us-east-2.amazonaws.com/stac/v1/catalog.json>`_.
+
+    Examples
+    --------
+    Get every current dataset:
+
+    >>> import pysdp
+    >>> cat = pysdp.get_catalog()  # doctest: +SKIP
+    >>> cat.shape  # doctest: +SKIP
+    (140, 18)
+
+    Filter to Upper Gunnison vegetation products:
+
+    >>> veg = pysdp.get_catalog(domains=["UG"], types=["Vegetation"])  # doctest: +SKIP
+
+    Find all yearly time-series products across every domain:
+
+    >>> yearly = pysdp.get_catalog(timeseries_types=["Yearly"])  # doctest: +SKIP
+
+    Return both current and deprecated entries:
+
+    >>> all_rows = pysdp.get_catalog(deprecated=None)  # doctest: +SKIP
+
+    See Also
+    --------
+    get_metadata : Fetch detailed XML metadata for one dataset.
+    open_raster : Open a catalog entry as a lazy ``xarray.Dataset``.
     """
     if source == "stac":
         from pysdp.stac import get_stac_catalog
@@ -138,21 +206,50 @@ def get_metadata(
 ) -> dict[str, Any] | Any:
     """Fetch the QGIS-style XML metadata for one SDP dataset.
 
+    Each SDP product has a companion metadata XML document on S3 that
+    describes provenance, sensor details, processing history, and other
+    long-form context. This function fetches that XML over HTTP and parses
+    it.
+
     Parameters
     ----------
-    catalog_id
-        Six-character SDP catalog ID (e.g., ``"R3D009"``).
-    as_dict
-        If True (default), parse the XML into a nested dict via ``xmltodict``.
-        If False, return the parsed ``lxml.etree._Element``.
+    catalog_id : str
+        Six-character SDP catalog ID (e.g., ``"R3D009"``, ``"BM012"``).
+    as_dict : bool, default True
+        If ``True``, return a nested ``dict`` parsed via ``xmltodict`` —
+        convenient for scripting. If ``False``, return the parsed
+        ``lxml.etree._Element`` — better for XPath queries.
+
+    Returns
+    -------
+    dict or lxml.etree._Element
+        Parsed metadata. For dict output, the top-level key is typically
+        ``"qgis"`` (reflecting the document's QGIS metadata schema).
 
     Raises
     ------
     ValueError
-        If ``catalog_id`` is not exactly six characters.
+        If ``catalog_id`` isn't exactly six characters.
     KeyError
-        If ``catalog_id`` is not in the packaged catalog; the error message
-        suggests ``source='live'`` or an upgrade.
+        If ``catalog_id`` isn't in the packaged catalog. The message
+        includes the snapshot date and suggests ``source="live"`` or an upgrade.
+    requests.HTTPError
+        If the XML URL returns a non-2xx status (rare; implies an
+        upstream data-hosting issue).
+
+    Examples
+    --------
+    Get the metadata for the UG 3 m bare-earth DEM as a dict:
+
+    >>> import pysdp
+    >>> meta = pysdp.get_metadata("R3D009")  # doctest: +SKIP
+    >>> meta["qgis"]["abstract"]  # doctest: +SKIP
+    'This 3 m resolution digital elevation model...'
+
+    See Also
+    --------
+    get_catalog : Discover catalog IDs by filtering.
+    open_raster : Open a catalog entry as a raster.
     """
     import requests
 

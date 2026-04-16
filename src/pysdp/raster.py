@@ -211,12 +211,108 @@ def open_raster(
     overwrite: bool = False,
     verbose: bool = True,
 ) -> xr.Dataset:
-    """Open an SDP raster as a lazy `xarray.Dataset`.
+    """Open an SDP raster as a lazy ``xarray.Dataset``.
 
-    See SPEC.md §4.2 for the full contract. Returns a Dataset with one data
-    variable named after the product's canonical short name, dims
-    ``(y, x)`` / ``(band, y, x)`` for single-layer, ``(time, y, x)`` for
-    time-series.
+    Reads cloud-optimized GeoTIFFs from S3 via GDAL's VSICURL, without
+    downloading. Returns a Dataset with one data variable named after the
+    product's canonical short name (e.g. ``"UG_dem_3m_v1"``). CRS is always
+    set to ``EPSG:32613`` (UTM 13N). For time-series products, the Dataset
+    gains a uniform ``pandas.DatetimeIndex`` on the ``time`` coordinate —
+    Daily → actual date, Monthly → first-of-month, Yearly → Jan 1.
+
+    Parameters
+    ----------
+    catalog_id : str, optional
+        Six-character SDP catalog ID (e.g., ``"R3D009"``). Mutually
+        exclusive with ``url``. When given, scale/offset metadata from the
+        catalog are attached as CF attrs on the data variable.
+    url : str, optional
+        Direct HTTPS URL to an SDP COG. Mutually exclusive with
+        ``catalog_id``. No catalog lookup, so scale/offset attrs come from
+        the COG header only.
+    years : sequence of int, optional
+        For Yearly products, which years to load. Alternative to
+        ``date_start``/``date_end``.
+    months : sequence of int, optional
+        For Monthly products, which months (1–12) to load. Must be combined
+        with ``years`` or used alone (all years × months requested).
+    date_start, date_end : str or datetime.date, optional
+        Date range to load (inclusive). For Daily, defines the time slice;
+        for Monthly/Yearly, uses rSDP's anchor-day stepping semantics. When
+        neither is given on a Daily product, the first 30 days from
+        ``MinDate`` are loaded to avoid accidental 10-year VSICURL handle
+        explosions (matches rSDP).
+    chunks : dict, "auto", or None, default "auto"
+        Dask chunking. ``"auto"`` uses xarray's chunk inference (requires
+        ``pysdp[dask]``; falls back to eager reads with a warning if dask
+        isn't installed). ``None`` eager-loads. Pass a dict for manual
+        control (e.g., ``{"x": 1024, "y": 1024}``).
+    download : bool, default False
+        **Not yet implemented (Phase 5).** For now, raises
+        ``NotImplementedError``. Use ``pysdp.download()`` to bulk-fetch
+        COGs to disk, then open them with ``rioxarray.open_rasterio``.
+    download_path : str or PathLike, optional
+        Directory for downloaded files (only used when ``download=True``).
+    overwrite : bool, default False
+        Reserved for the download path (not yet implemented).
+    verbose : bool, default True
+        If ``True``, print progress messages (layer count etc.) to stderr.
+
+    Returns
+    -------
+    xarray.Dataset
+        Dataset with one data variable. Dimensions depend on the product:
+
+        - ``(y, x)`` for single-band ``Single`` products
+        - ``(band, y, x)`` for multi-band ``Single`` products
+        - ``(time, y, x)`` for ``Yearly``/``Monthly``/``Daily`` time-series
+          (where ``time`` is a ``pandas.DatetimeIndex``)
+
+        CRS is ``EPSG:32613`` written via ``rio.write_crs``. Catalog-derived
+        scale/offset metadata is attached to the variable as CF
+        ``scale_factor`` and ``add_offset`` attrs; call
+        ``ds.decode_cf()`` or open with ``mask_and_scale=True`` to
+        materialize real values.
+
+    Raises
+    ------
+    ValueError
+        On invalid ``catalog_id`` / ``url`` combinations, time-arg
+        combinations inconsistent with the product's ``TimeSeriesType``, or
+        a ``url`` that doesn't start with ``https://``.
+    KeyError
+        If ``catalog_id`` isn't in the packaged catalog.
+    NotImplementedError
+        If ``download=True`` (Phase 5 stub).
+
+    Examples
+    --------
+    Open the UG 3 m bare-earth DEM (``Single`` product):
+
+    >>> import pysdp
+    >>> dem = pysdp.open_raster("R3D009")  # doctest: +SKIP
+    >>> dem.rio.crs.to_epsg()  # doctest: +SKIP
+    32613
+
+    Open three days of daily Tmax:
+
+    >>> tmax = pysdp.open_raster(
+    ...     "R4D004",
+    ...     date_start="2021-11-02",
+    ...     date_end="2021-11-04",
+    ... )  # doctest: +SKIP
+    >>> tmax.sizes["time"]  # doctest: +SKIP
+    3
+
+    Open a single year of annual snow persistence:
+
+    >>> snow = pysdp.open_raster("R4D001", years=[2019])  # doctest: +SKIP
+
+    See Also
+    --------
+    open_stack : Load multiple products as variables in one Dataset.
+    extract_points : Sample an opened raster at point locations.
+    extract_polygons : Summarize an opened raster over polygons.
     """
     ensure_gdal_defaults()
     normalized = validate_user_args(
@@ -279,18 +375,61 @@ def open_stack(
     align: Literal["exact", "reproject"] = "exact",
     verbose: bool = True,
 ) -> xr.Dataset:
-    """Load multiple SDP products into a single `xarray.Dataset`.
+    """Load multiple SDP products into a single ``xarray.Dataset``.
 
-    One data variable per product; shared ``x``/``y`` (and ``time`` where
-    applicable). See SPEC.md §4.2.
+    Each product becomes one data variable. ``x``/``y`` (and ``time`` where
+    applicable) coordinates are shared across variables, so downstream
+    analysis can treat the stack as a single object (``ds["dem"] -
+    ds["snow_persistence"].mean("time")`` etc.). Use this when you want to
+    compose products that are already on the same grid — for example an
+    elevation model and a slope raster both derived from the same LiDAR
+    campaign.
 
-    ``align="exact"`` (default) requires all products to share CRS, transform,
-    and shape; raises a descriptive error otherwise with a pointer to
-    ``align="reproject"``.
+    Parameters
+    ----------
+    catalog_ids : sequence of str
+        Non-empty sequence of SDP catalog IDs.
+    years, months, date_start, date_end : optional
+        Shared time-slicing args. Applied to every time-series product in
+        the stack; ignored for ``Single`` products.
+    chunks : dict, "auto", or None, default "auto"
+        Dask chunking, passed through to each ``open_raster`` call.
+    align : {"exact", "reproject"}, default "exact"
+        ``"exact"`` requires all products to share CRS + transform +
+        shape; raises ``ValueError`` on mismatch with a descriptive list of
+        which products diverged. ``"reproject"`` reprojects to the first
+        product's grid via ``odc-stac`` (planned for Phase 7 of the
+        ROADMAP; currently raises ``NotImplementedError``).
+    verbose : bool, default True
+        Forwarded to ``open_raster`` for per-product progress messages.
 
-    ``align="reproject"`` is planned for Phase 7 (requires `odc-stac` from the
-    ``[stac]`` extra to do efficient Dask-aware reprojection). Today it raises
-    `NotImplementedError`.
+    Returns
+    -------
+    xarray.Dataset
+        One data variable per catalog_id. See
+        :func:`open_raster` for per-variable shape and CRS.
+
+    Raises
+    ------
+    ValueError
+        If ``catalog_ids`` is empty, if ``align`` isn't one of the two
+        valid values, or (with ``align="exact"``) if the products don't
+        share a common grid.
+    NotImplementedError
+        If ``align="reproject"`` (Phase 7 future work).
+
+    Examples
+    --------
+    Stack the UG 3 m DEM with the matching slope and aspect rasters:
+
+    >>> import pysdp
+    >>> topo = pysdp.open_stack(["R3D009", "R3D012", "R3D010"])  # doctest: +SKIP
+    >>> sorted(topo.data_vars)  # doctest: +SKIP
+    ['UG_dem_3m_v1', 'UG_dem_slope_1m_v1', 'UG_topographic_aspect_southness_1m_v1']
+
+    See Also
+    --------
+    open_raster : Single-product load.
     """
     if not catalog_ids:
         raise ValueError("catalog_ids must be a non-empty sequence.")
