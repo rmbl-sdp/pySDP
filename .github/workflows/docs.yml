@@ -3,6 +3,8 @@ name: Docs
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -24,7 +26,23 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - run: uv sync --group docs
-      # TODO(phase-6): enable once docs/ content exists
-      # - run: uv run mkdocs build --strict
-      - run: echo "Docs build stub — populated in Phase 6"
+      # mkdocstrings needs the package importable so it can introspect the
+      # public API for the auto-generated reference page.
+      - run: uv sync --group docs --no-dev
+      - run: uv run mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    # Only publish to GitHub Pages on main-branch pushes. Pull requests just
+    # exercise the strict build.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

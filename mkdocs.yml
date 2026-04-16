@@ -1,0 +1,97 @@
+site_name: pySDP
+site_description: Native Python interface for the RMBL Spatial Data Platform
+site_url: https://rmbl-sdp.github.io/pySDP/
+repo_url: https://github.com/rmbl-sdp/pySDP
+repo_name: rmbl-sdp/pySDP
+edit_uri: edit/main/docs/
+copyright: "Copyright &copy; 2026 Ian Breckheimer / RMBL — MIT license"
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      accent: green
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            docstring_style: numpy
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+            members_order: source
+            filters:
+              - "!^_"
+          paths: [src]
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - User guides:
+    - guides/index.md
+  - API reference: api.md
+  - Changelog: changelog.md
+
+extra:
+  # Design documents (SPEC.md, ROADMAP.md) live at the repo root, not in
+  # the rendered docs site — they're dev-oriented rather than user-facing.
+  # Users who need them find them on GitHub.
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rmbl-sdp/pySDP
