@@ -56,7 +56,7 @@ dependencies = [
 stac = ["pystac-client>=0.7", "odc-stac>=0.3"]
 exact = ["exactextract>=0.2"]
 download = ["obstore>=0.3", "fsspec>=2024.1", "s3fs>=2024.1"]
-viz = ["matplotlib>=3.8", "folium>=0.15"]
+viz = ["matplotlib>=3.8", "folium>=0.15", "mapclassify>=2.6"]
 dask = ["dask[array]>=2024.1"]
 hub = ["dask-gateway>=2024.1", "pysdp[stac]"]
 all = ["pysdp[stac,exact,download,viz,dask,hub]"]

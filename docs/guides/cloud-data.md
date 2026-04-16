@@ -65,7 +65,11 @@ bounds = pd.concat(frames).pipe(gpd.GeoDataFrame, crs=frames[0].crs)
 bounds.explore(column="Domain", tiles="Esri.NatGeoWorldMap", alpha=0.6)
 ```
 
-`GeoDataFrame.explore()` produces a folium-backed interactive map in notebooks — the geopandas analog of `terra::plet()` in rSDP.
+`GeoDataFrame.explore()` produces a folium-backed interactive map — the geopandas analog of `terra::plet()` in rSDP:
+
+<iframe src="assets/domains_map.html"
+        width="100%" height="450" style="border:0" loading="lazy"
+        title="Folium map of SDP spatial domains"></iframe>
 
 ## Connecting to data in the cloud
 
@@ -78,7 +82,19 @@ ug_elev = pysdp.open_raster("R3D009")  # UG bare-earth DEM, 3 m
 ug_elev
 ```
 
-Inspect the structure: dimensions, resolution, CRS (`EPSG:32613`), and data variable name. Cropping to an area of interest only fetches the portion of the COG that intersects the bounding box:
+Inspect the structure: dimensions, resolution, CRS (`EPSG:32613`), and data variable name. A quick plot:
+
+```python
+import matplotlib.pyplot as plt
+ug_elev[next(iter(ug_elev.data_vars))].plot.imshow(cmap="terrain", robust=True)
+plt.gca().set_aspect("equal")
+```
+
+![Coarsened GMUG DEM overview](assets/dem_overview.png)
+
+*(The DEM here is the GMUG 9 m version, downsampled for fast rendering in the docs; the 3 m UG DEM is ~64× larger per read.)*
+
+Cropping to an area of interest only fetches the portion of the COG that intersects the bounding box:
 
 ```python
 gt_bounds = bounds[bounds["Domain"] == "Gothic Townsite"].to_crs(ug_elev.rio.crs)

@@ -21,12 +21,22 @@ __all__ = ["VSICURL_PREFIX", "ensure_gdal_defaults", "gdal_defaults"]
 def gdal_defaults() -> dict[str, str]:
     """Return the canonical GDAL-on-S3 env dict for SDP reads.
 
-    Scoped via `rasterio.Env(**gdal_defaults())` inside pysdp readers so
-    user overrides are preserved. Phase 7 extends this with HTTP/2 tuning.
+    Applied via `os.environ.setdefault(...)` inside `ensure_gdal_defaults()`
+    — existing user values always win. Phase 7 extends this with HTTP/2
+    tuning.
+
+    Notes
+    -----
+    Earlier versions also set ``CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif,...``
+    to avoid sidecar probing. That env var leaks process-globally and blocks
+    VSICURL reads of GeoJSON / GeoPackage / Shapefile URLs (e.g.,
+    ``gpd.read_file(".../foo.geojson")`` fails after ``pysdp.open_raster()``
+    is called in the same process). ``GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR``
+    alone already achieves the main goal (skipping directory-listing probes),
+    so we drop the extension whitelist.
     """
     return {
         "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
-        "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif,.TIF,.tiff",
         "VSI_CACHE": "TRUE",
         "VSI_CACHE_SIZE": "5000000",
     }

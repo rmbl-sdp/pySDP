@@ -64,6 +64,16 @@ elevations
 
 pySDP auto-reprojects the points to the raster's CRS (`EPSG:32613` for all SDP rasters). Output is a `GeoDataFrame` with your input columns + the extracted elevation column.
 
+Three field sites plotted on the DEM (Roaring Judy, Gothic, Galena Lake span the Gunnison basin):
+
+![Three RMBL field sites on the GMUG DEM](assets/sites_over_dem.png)
+
+And the extracted elevations as a simple bar chart:
+
+![Extracted elevations at the three field sites](assets/extracted_values.png)
+
+*(The plot uses the GMUG 9 m DEM; only Gothic falls within GMUG, so the bar chart shows that one site. The extraction code above works identically against the UG 3 m DEM — same API, just slower to run on the larger raster.)*
+
 ## Buffered extraction at points with summaries
 
 "Extract the mean canopy height within 20 m of each site" is a polygon operation in disguise — buffer each point and run polygon extraction:

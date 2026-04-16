@@ -24,34 +24,47 @@ import matplotlib.pyplot as plt
 
 ```python
 # Digital elevation model — the base layer for most maps
-dem = pysdp.open_raster("R3D009", chunks=None)  # eager load for fast plotting
+dem = pysdp.open_raster("R5D009", chunks=None)  # GMUG 9 m DEM; smaller than UG 3 m
 
-# Stream flowlines — overlay
-streams = gpd.read_file(
-    "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release1/UER_streams_512k_mfd_1m_v2.tif"
-)  # (in practice use a vector export for streams)
+# Vector overlays — load any GeoJSON / GPKG / Shapefile with geopandas
+bounds = gpd.read_file(
+    "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/supplemental/UG_region_vect_1m.geojson"
+)
 ```
 
 ## Basic raster map with matplotlib
 
 ```python
 fig, ax = plt.subplots(figsize=(8, 6))
-dem["UG_dem_3m_v1"].plot.imshow(ax=ax, cmap="terrain", robust=True)
+dem[next(iter(dem.data_vars))].plot.imshow(ax=ax, cmap="terrain", robust=True)
 ax.set_aspect("equal")
-ax.set_title("Upper Gunnison DEM (3 m)")
+ax.set_title("GMUG bare-earth DEM (9 m)")
 plt.tight_layout()
 ```
 
-`.plot.imshow()` is xarray's matplotlib wrapper — handles colorbars, axis labels, and CRS-aware extent automatically. `robust=True` clips extreme outliers so the colormap stays useful.
+`.plot.imshow()` is xarray's matplotlib wrapper — it handles colorbars, axis labels, and CRS-aware extent automatically. `robust=True` clips extreme outliers so the colormap stays useful.
+
+![Basic GMUG DEM plot](assets/pretty_basic.png)
 
 ## Web maps with folium
 
 For exploration in a notebook, `GeoDataFrame.explore()` gives you a pan/zoom map with a single call:
 
 ```python
-watersheds = gpd.read_file("watersheds.gpkg")
-watersheds.explore(column="HYD_NAME", tiles="Esri.NatGeoWorldMap", cmap="Set2")
+import folium
+m = bounds.explore(column="Domain", tiles="Esri.WorldImagery", cmap="Set2")
+for _, row in sites.iterrows():
+    folium.Marker(
+        location=[row.geometry.y, row.geometry.x],
+        popup=row["site"],
+        icon=folium.Icon(color="red", icon="star"),
+    ).add_to(m)
+m
 ```
+
+<iframe src="assets/pretty_web.html"
+        width="100%" height="450" style="border:0" loading="lazy"
+        title="Folium map of SDP domains with field-site markers"></iframe>
 
 To overlay a raster on a folium map, use `folium.raster_layers.ImageOverlay` with an RGBA PNG you've rendered from the xarray data. That's more setup — for quick visual checks, `xarray.plot` + `matplotlib` is usually faster.
 
@@ -78,41 +91,56 @@ Combine raster + vector on one figure:
 ```python
 fig, ax = plt.subplots(figsize=(10, 8))
 
-# Base: DEM hillshade-style
-dem["UG_dem_3m_v1"].plot.imshow(
-    ax=ax, cmap="Greys_r", add_colorbar=False, alpha=0.6
+# Base: DEM in grey
+dem[next(iter(dem.data_vars))].plot.imshow(
+    ax=ax, cmap="Greys_r", add_colorbar=True, alpha=0.8,
 )
 
-# Overlay: watersheds in the raster's CRS
-watersheds.to_crs(dem.rio.crs).boundary.plot(
-    ax=ax, color="royalblue", linewidth=0.8
+# Overlay: domain boundaries in the raster's CRS
+bounds.to_crs(dem.rio.crs).boundary.plot(
+    ax=ax, color="royalblue", linewidth=1.5, linestyle="--",
 )
 
 # Overlay: field sites
+from shapely.geometry import Point
 sites = gpd.GeoDataFrame(
-    geometry=gpd.points_from_xy([-106.988934], [38.958446]),
+    {"site": ["Roaring Judy", "Gothic", "Galena Lake"]},
+    geometry=[
+        Point(-106.853186, 38.716995),
+        Point(-106.988934, 38.958446),
+        Point(-107.072569, 39.021644),
+    ],
     crs="EPSG:4326",
 ).to_crs(dem.rio.crs)
-sites.plot(ax=ax, color="red", markersize=50, marker="^")
+sites.plot(ax=ax, color="crimson", markersize=80, marker="^", edgecolor="white")
 
-ax.set_title("Upper Gunnison — DEM, watersheds, and Gothic study site")
+ax.set_title("GMUG DEM + SDP domain boundaries + RMBL field sites")
 ax.set_aspect("equal")
 plt.tight_layout()
 ```
+
+![DEM + boundaries + sites overlay](assets/pretty_overlay.png)
 
 ## Zooming in
 
 Crop to an AOI before plotting for faster rendering and sharper detail:
 
 ```python
-gothic_bbox = (325000, 4310000, 330000, 4315000)   # UTM 13N coords
-gothic_dem = dem.rio.clip_box(*gothic_bbox)
+# 5 km buffer around Gothic, in UTM 13N
+gothic_utm = sites.iloc[[1]].geometry.iloc[0]
+buffer = 5_000
+clipped = dem[next(iter(dem.data_vars))].rio.clip_box(
+    gothic_utm.x - buffer, gothic_utm.y - buffer,
+    gothic_utm.x + buffer, gothic_utm.y + buffer,
+)
 
-fig, ax = plt.subplots(figsize=(8, 6))
-gothic_dem["UG_dem_3m_v1"].plot.imshow(ax=ax, cmap="terrain", robust=True)
-ax.set_title("Gothic valley — 3 m DEM")
+fig, ax = plt.subplots(figsize=(8, 7))
+clipped.plot.imshow(ax=ax, cmap="terrain", robust=True)
+ax.set_title("Gothic valley — 9 m DEM (±5 km)")
 ax.set_aspect("equal")
 ```
+
+![Zoomed-in Gothic valley](assets/pretty_zoomed.png)
 
 ## Exporting
 
