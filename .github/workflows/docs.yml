@@ -35,9 +35,9 @@ jobs:
           path: site
 
   deploy:
-    # Only publish to GitHub Pages on main-branch pushes. Pull requests just
-    # exercise the strict build.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Publish to GitHub Pages on main-branch pushes and on manual
+    # workflow_dispatch. Pull requests just exercise the strict build.
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     environment:
