@@ -52,8 +52,7 @@ def test_constants_values() -> None:
 @pytest.mark.parametrize(
     ("fn_name", "args"),
     [
-        ("get_catalog", ()),
-        ("get_metadata", ("R3D009",)),
+        # get_catalog + get_metadata implemented in Phase 1 (see test_catalog.py)
         ("open_raster", ()),
         ("open_stack", (["R3D009"],)),
         ("extract_points", (None, None)),
@@ -61,8 +60,8 @@ def test_constants_values() -> None:
         ("download", ()),
     ],
 )
-def test_stubs_raise_not_implemented(fn_name: str, args: tuple[object, ...]) -> None:
-    """Phase 0 stubs should raise NotImplementedError when invoked."""
+def test_unimplemented_stubs_raise_not_implemented(fn_name: str, args: tuple[object, ...]) -> None:
+    """Stubs for not-yet-implemented phases raise NotImplementedError."""
     import pysdp
 
     fn = getattr(pysdp, fn_name)
