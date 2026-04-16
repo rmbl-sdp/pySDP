@@ -1,0 +1,191 @@
+[build-system]
+requires = ["hatchling>=1.24", "hatch-vcs>=0.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pysdp"
+dynamic = ["version"]
+description = "Native Python interface for the RMBL Spatial Data Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Ian Breckheimer", email = "ikb@rmbl.org" },
+]
+keywords = [
+    "geospatial",
+    "cog",
+    "cloud-optimized-geotiff",
+    "stac",
+    "xarray",
+    "rmbl",
+    "rocky-mountains",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "xarray>=2024.1",
+    "rioxarray>=0.15",
+    "rasterio>=1.3",
+    "geopandas>=1.0",
+    "shapely>=2.0",
+    "pystac>=1.10",
+    "pyproj>=3.6",
+    "requests>=2.31",
+    "lxml>=4.9",
+    "xmltodict>=0.13",
+    "xvec>=0.3",
+]
+
+[project.optional-dependencies]
+stac = ["pystac-client>=0.7", "odc-stac>=0.3"]
+exact = ["exactextract>=0.2"]
+download = ["obstore>=0.3", "fsspec>=2024.1", "s3fs>=2024.1"]
+viz = ["matplotlib>=3.8", "folium>=0.15"]
+dask = ["dask[array]>=2024.1"]
+hub = ["dask-gateway>=2024.1", "pysdp[stac]"]
+all = ["pysdp[stac,exact,download,viz,dask,hub]"]
+
+[project.urls]
+Homepage = "https://github.com/rmbl-sdp/pySDP"
+Documentation = "https://rmbl-sdp.github.io/pySDP"
+Repository = "https://github.com/rmbl-sdp/pySDP"
+Issues = "https://github.com/rmbl-sdp/pySDP/issues"
+Changelog = "https://github.com/rmbl-sdp/pySDP/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+test = [
+    "pytest>=8",
+    "pytest-cov",
+    "pytest-recording",
+    "moto[s3]>=5",
+]
+lint = ["ruff>=0.5", "pre-commit"]
+type = ["mypy>=1.10", "pandas-stubs", "types-requests"]
+docs = [
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-jupyter",
+]
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
+    { include-group = "type" },
+    { include-group = "docs" },
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/pysdp/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pysdp"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/pysdp",
+    "tests",
+    "README.md",
+    "LICENSE",
+    "SPEC.md",
+    "ROADMAP.md",
+    "CHANGELOG.md",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "UP",
+    "B",
+    "C4",
+    "SIM",
+    "NPY",
+    "PD",
+    "RET",
+]
+ignore = [
+    "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
+files = ["src/pysdp"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+strict = false
+
+[[tool.mypy.overrides]]
+module = [
+    "xarray.*",
+    "rasterio.*",
+    "rioxarray.*",
+    "geopandas.*",
+    "shapely.*",
+    "pyproj.*",
+    "pystac.*",
+    "pystac_client.*",
+    "xvec.*",
+    "exactextract.*",
+    "odc.*",
+    "obstore.*",
+    "fsspec.*",
+    "s3fs.*",
+    "xmltodict.*",
+    "lxml.*",
+    "matplotlib.*",
+    "folium.*",
+    "dask.*",
+    "dask_gateway.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+testpaths = ["tests"]
+markers = [
+    "network: integration tests that hit live S3 (deselect with '-m \"not network\"')",
+]
+
+[tool.coverage.run]
+source = ["src/pysdp"]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "\\.\\.\\.",
+]
