@@ -11,9 +11,9 @@ from typing import TYPE_CHECKING, Any, Literal
 from pysdp._catalog_data import (
     load_live_catalog,
     load_packaged_catalog,
+    lookup_catalog_row,
 )
 from pysdp.constants import (
-    CATALOG_ID_NCHAR,
     DOMAINS,
     RELEASES,
     TIMESERIES_TYPES,
@@ -131,16 +131,6 @@ def get_catalog(
     )
 
 
-def _unknown_catalog_id_error(catalog_id: str, df: pd.DataFrame) -> KeyError:
-    snapshot_date = df.attrs.get("snapshot_date")
-    date_part = f" (dated {snapshot_date.isoformat()})" if snapshot_date is not None else ""
-    return KeyError(
-        f"CatalogID {catalog_id!r} not found in packaged catalog{date_part}. "
-        f"Your snapshot may be outdated — try `get_catalog(source='live')` "
-        f"or `pip install -U pysdp`."
-    )
-
-
 def get_metadata(
     catalog_id: str,
     *,
@@ -166,20 +156,8 @@ def get_metadata(
     """
     import requests
 
-    if len(catalog_id) != CATALOG_ID_NCHAR:
-        raise ValueError(
-            f"catalog_id must be {CATALOG_ID_NCHAR} characters, "
-            f"got {len(catalog_id)}: {catalog_id!r}"
-        )
-
-    # Include deprecated rows so metadata lookups work for older datasets.
-    df = load_packaged_catalog()
-    matches = df[df["CatalogID"] == catalog_id]
-    if matches.empty:
-        raise _unknown_catalog_id_error(catalog_id, df)
-
-    metadata_url = matches.iloc[0]["Metadata.URL"]
-    resp = requests.get(metadata_url, timeout=30)
+    row = lookup_catalog_row(catalog_id)
+    resp = requests.get(row["Metadata.URL"], timeout=30)
     resp.raise_for_status()
 
     if as_dict:

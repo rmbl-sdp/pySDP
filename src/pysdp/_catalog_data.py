@@ -169,6 +169,32 @@ def live_catalog_url() -> str:
     return _LIVE_URL_BASE + _packaged_csv_resource().name
 
 
+def lookup_catalog_row(catalog_id: str) -> pd.Series:
+    """Fetch a single catalog entry by CatalogID, or raise a descriptive error.
+
+    Shared between `get_metadata()` and `open_raster()`. The error message
+    includes the packaged-snapshot date and remediation hints (SPEC §4.1).
+    """
+    from pysdp.constants import CATALOG_ID_NCHAR
+
+    if len(catalog_id) != CATALOG_ID_NCHAR:
+        raise ValueError(
+            f"catalog_id must be {CATALOG_ID_NCHAR} characters, "
+            f"got {len(catalog_id)}: {catalog_id!r}"
+        )
+    df = load_packaged_catalog()
+    matches = df[df["CatalogID"] == catalog_id]
+    if matches.empty:
+        snapshot = df.attrs.get("snapshot_date")
+        date_part = f" (dated {snapshot.isoformat()})" if snapshot is not None else ""
+        raise KeyError(
+            f"CatalogID {catalog_id!r} not found in packaged catalog{date_part}. "
+            f"Your snapshot may be outdated — try `get_catalog(source='live')` "
+            f"or `pip install -U pysdp`."
+        )
+    return matches.iloc[0]
+
+
 def load_live_catalog() -> pd.DataFrame:
     """Fetch the live catalog CSV from S3 (bypasses the packaged snapshot)."""
     import requests

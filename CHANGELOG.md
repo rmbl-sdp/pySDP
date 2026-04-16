@@ -8,6 +8,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 3 — Raster access** (SPEC.md §9):
+  - `pysdp.open_raster(catalog_id, ...)` — lazy cloud COG access via
+    `rioxarray.open_rasterio` over GDAL VSICURL. Returns
+    `xarray.Dataset` with one data variable named after the product's
+    canonical short name. Dims `(y, x)` / `(band, y, x)` for
+    Single; `(time, y, x)` for Yearly / Monthly / Daily.
+  - `pysdp.open_raster(url=...)` — URL-direct branch, no catalog
+    lookup, no scale/offset application (matches rSDP).
+  - `pysdp.open_stack(catalog_ids, align="exact")` — multi-product
+    loader. `align="exact"` default verifies CRS + transform + shape
+    consistency; mismatches raise a descriptive error listing which
+    products drifted. `align="reproject"` is planned for Phase 7 and
+    raises `NotImplementedError` today.
+  - Time coordinate is uniformly `pandas.DatetimeIndex`: Daily →
+    actual date, Monthly → first-of-month, Yearly → Jan 1. Enables
+    `ds.sel(time="2019")`, `.resample()`, `groupby("time.year")`
+    across all TimeSeriesTypes.
+  - CRS set to `EPSG:32613` via `rio.write_crs()`. Scale/offset from
+    the catalog attached as CF `scale_factor` / `add_offset` attrs
+    on the data variable (scale = 1 / DataScaleFactor per rSDP's
+    convention; `xarray.decode_cf()` or `mask_and_scale=True`
+    materializes the real values).
+  - `pysdp.io.vsicurl.gdal_defaults()` + `ensure_gdal_defaults()` —
+    minimal GDAL VSICURL env for cloud COGs
+    (`GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR`,
+    `CPL_VSIL_CURL_ALLOWED_EXTENSIONS=.tif,.TIF,.tiff`,
+    `VSI_CACHE=TRUE`, `VSI_CACHE_SIZE=5000000`). Applied via
+    `os.environ.setdefault` — never clobbers user-set values. Full
+    cloud-tuned set (HTTP/2 etc.) lands in Phase 7.
+  - `chunks="auto"` (default) gracefully falls back to eager reads
+    with a `UserWarning` when `dask` is not installed; install
+    `pysdp[dask]` for lazy Dask-backed reads.
+  - `download=True` raises `NotImplementedError` pointing at
+    Phase 5's `pysdp.download()`.
+  - Added `pysdp._catalog_data.lookup_catalog_row()` as a shared
+    helper; `get_metadata` and `open_raster` now use it, emitting
+    the same descriptive "unknown catalog_id" error.
+  - Tests: 30 new unit tests in `tests/test_raster.py`
+    (canonical-variable naming, time-coord construction, chunks
+    fallback, GDAL-env safety, Dataset assembly via synthetic
+    local COGs, `open_stack` grid-alignment checks) + 3 network
+    integration tests against real S3 (Single + Daily + URL-direct
+    branches).
+  - `dask[array]>=2024.1` added to the `test` dependency group so
+    CI covers the chunked read path.
+
 - **Phase 2 — Argument validation + time-slice resolvers** (SPEC.md §9):
   - `pysdp.io.template.substitute_template()` — `{year}`/`{month}`/`{day}`
     URL-template substitution with scalar/vector recycling and

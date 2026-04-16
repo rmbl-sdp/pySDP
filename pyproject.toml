@@ -74,6 +74,9 @@ test = [
     "pytest-recording",
     "responses>=0.24",
     "moto[s3]>=5",
+    # Needed to exercise the chunks='auto' code path in test_raster.py; also
+    # standard for scientific Python packages that integrate with Dask.
+    "dask[array]>=2024.1",
 ]
 lint = ["ruff>=0.5", "pre-commit"]
 type = ["mypy>=1.10", "pandas-stubs", "types-requests"]

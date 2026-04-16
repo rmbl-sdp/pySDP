@@ -53,8 +53,7 @@ def test_constants_values() -> None:
     ("fn_name", "args"),
     [
         # get_catalog + get_metadata implemented in Phase 1 (see test_catalog.py)
-        ("open_raster", ()),
-        ("open_stack", (["R3D009"],)),
+        # open_raster + open_stack implemented in Phase 3 (see test_raster.py)
         ("extract_points", (None, None)),
         ("extract_polygons", (None, None)),
         ("download", ()),
