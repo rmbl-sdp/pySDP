@@ -1,7 +1,7 @@
 # pySDP — Post-v0.1 Roadmap
 
 **Status:** Scoping document. Not a commitment; not part of the v0.1 spec.
-**Scope:** Optional platform integrations between pySDP and the [CHESS Analysis Hub](../CHESS_Analysis_Hub/) — a RMBL-operated JupyterHub on AWS EKS (us-east-2), colocated with the SDP S3 bucket.
+**Scope:** Two tracks of post-v0.1 work: (1) platform integrations between pySDP and the [CHESS Analysis Hub](../CHESS_Analysis_Hub/) — a RMBL-operated JupyterHub on AWS EKS (us-east-2), colocated with the SDP S3 bucket; (2) support for high-dimensional array stores (icechunk / VirtualiZarr-backed datasets) alongside the existing COG raster products.
 **Companion doc:** [SPEC.md](./SPEC.md) (v0.1 — feature-parity port of rSDP v0.2).
 
 ---
@@ -14,6 +14,7 @@ What's missing today:
 - **No distributed Dask**: the Hub has `dask` + `dask-labextension` but no Dask Gateway or other multi-pod cluster spawner. Users are limited to in-pod parallelism.
 - **No Hub-aware defaults in pySDP**: users have to hand-configure GDAL env vars, S3 signing, and cluster options.
 - **No distributed-extraction recipes**: community has no blessed pattern for scaling `extract_points` / `extract_polygons` across millions of geometries. Roll-your-own territory.
+- **No support for high-dimensional array stores**: several critical SDP datasets (e.g., AOP imaging-spectrometer mosaics — 426 bands × 30 000 × 22 000 pixels, ~1 TB per mosaic) are stored as tiled netCDF files wrapped by [VirtualiZarr](https://virtualizarr.readthedocs.io/) into [icechunk](https://icechunk.io/) stores on S3. These don't fit the COG-per-time-slice model that v0.1's `open_raster()` targets. Users currently open them via a multi-step `icechunk.s3_storage → Repository.open → xr.open_zarr` recipe (see [`01_distributed_analysis_with_dask.ipynb`](../CHESS_Analysis_Hub/docker/tutorials/01_distributed_analysis_with_dask.ipynb) in the CHESS Hub tutorials). pySDP should collapse that into a one-liner that composes with the existing extraction and catalog functions.
 
 These are the gaps the roadmap targets.
 
@@ -27,6 +28,7 @@ These are load-bearing — violating them is what has burned other domain packag
 4. **Defer to `boto3` / GDAL credential chains.** IRSA on the Hub "just works" with the default boto3 and GDAL ≥3.5 chains. Don't wrap credentials. The one exception: scope `AWS_NO_SIGN_REQUEST=YES` to SDP-bucket reads only (never global), so users mixing public-SDP reads with private-user-bucket writes don't get burned.
 5. **Environment-var defaults via `setdefault`, never clobber.** If the user set `GDAL_DISABLE_READDIR_ON_OPEN=NO` for a legitimate reason, pySDP must not overwrite it. Either `os.environ.setdefault(...)` or (preferred) scope config via `rasterio.Env(...)` inside pySDP's own readers.
 6. **Reuse community helpers where they exist.** odc-stac already ships `configure_rio(client=client, cloud_defaults=True)` for broadcasting GDAL env to Dask workers. pySDP's `configure()` should wrap it, not reimplement it.
+7. **Backend-agnostic return types.** Whether the underlying store is a COG on VSICURL, a Zarr store via icechunk, or a future format, pySDP always returns `xarray.Dataset` with standardized coordinate names (`x`, `y`, optionally `time`) and CRS set via `rio.write_crs`. This lets `extract_points`, `extract_polygons`, `rio.clip_box`, and `.plot.imshow` work identically across backends. Backend-specific knobs (e.g., icechunk `authorize_virtual_chunk_access`) are exposed as kwargs on the opener, not baked into the Dataset.
 
 ## 3. Proposed phases
 
@@ -132,6 +134,105 @@ Minor ergonomic items that only make sense once Phases 7–8 are in place:
 - Pre-populate a `~/pysdp-examples/` directory on first Hub login (via a Hub-side post-start hook in `docker/Dockerfile`, not in pySDP itself) with the docs recipes as runnable notebooks.
 - Opt-in live-catalog on the Hub: `pysdp.hub.configure(client, catalog_source="live")` flips the default for that session. Per Principle 2, never silent; user asks for it explicitly. Low effort; ~1 hour.
 
+### Phase 10 — Icechunk / VirtualiZarr array-store integration (~5–6 days)
+
+**Target:** SDP's high-dimensional array stores (AOP imaging-spectrometer mosaics, future climate/LiDAR cubes) are as easy to discover and work with as COG rasters — one function call to open, full compatibility with pySDP's extraction and plotting functions, lazy Dask-backed reads out of the box.
+
+**Context:** Several critical SDP datasets are stored as tiled netCDF files on S3, wrapped by [VirtualiZarr](https://virtualizarr.readthedocs.io/) into [icechunk](https://icechunk.io/) stores. These are fundamentally different from the COG-per-time-slice model: they're high-dimensional cubes (e.g., 426 spectral bands × 30 000 × 22 000 spatial pixels ≈ 1 TB per AOP mosaic), natively chunked in Zarr format (25 × 500 × 500), and accessed via `icechunk.s3_storage → Repository.open → xr.open_zarr`. The current access recipe is ~8 lines of boilerplate (bucket, prefix, region, auth, repo, session, open_zarr) that users have to remember or copy from tutorials.
+
+#### Phase 10a — Catalog extension (~1 day)
+
+Extend the SDP product catalog to include icechunk store entries alongside COG rows:
+
+- Add a `BackendType` column: `"cog"` (existing products) or `"icechunk"` (new stores).
+- Add columns for icechunk-specific metadata: `StorageBucket`, `StoragePrefix`, `StorageRegion`.
+- `get_catalog()` returns both types seamlessly. Users filter via `get_catalog(backend_types=["icechunk"])` or similar; unfiltered calls return everything.
+- Existing COG workflows are unaffected (the new column defaults to `"cog"` for all 156 existing products).
+- Update `scripts/update_catalog.py` to handle the new schema.
+
+#### Phase 10b — `open_store()` function (~2–3 days)
+
+New public API function alongside `open_raster`:
+
+```python
+pysdp.open_store(
+    catalog_id: str,
+    *,
+    wavelengths: Sequence[float] | None = None,   # band selection
+    bbox: tuple[float, float, float, float] | None = None,
+    chunks: dict | Literal["auto"] | None = "auto",
+    standardize_coords: bool = True,
+    anonymous: bool = True,
+) -> xr.Dataset
+```
+
+Internally:
+
+1. Look up catalog row; assert `BackendType == "icechunk"`.
+2. Construct `icechunk.s3_storage(bucket=..., prefix=..., region=..., anonymous=...)`.
+3. `Repository.open(storage, authorize_virtual_chunk_access={...})`.
+4. `xr.open_zarr(repo.readonly_session(branch="main").store)`.
+5. If `standardize_coords=True` (default): rename `easting` → `x`, `northing` → `y`; write CRS as `EPSG:32613` via `rio.write_crs`. This makes `extract_points`, `extract_polygons`, `rio.clip_box`, and `.plot.imshow` work without extra setup.
+6. If `wavelengths` is specified: `.sel(wavelength=wavelengths, method="nearest")`.
+7. If `bbox` is specified: `.sel(x=slice(xmin, xmax), y=slice(ymax, ymin))` (note: y may be decreasing).
+
+The function collapses the current 8-line tutorial recipe into:
+
+```python
+ds = pysdp.open_store("AOP001")                    # full mosaic, lazy
+ds = pysdp.open_store("AOP001", wavelengths=[660, 850])  # just red + NIR
+ds = pysdp.open_store("AOP001", bbox=(325000, 4314000, 327000, 4316000))  # 2 × 2 km
+```
+
+New `[icechunk]` optional extra: `["icechunk>=0.1", "zarr>=3"]`. Calling `open_store()` without it raises `ImportError` with a helpful message (`pip install pysdp[icechunk]`).
+
+Re-exported from `pysdp.__init__` alongside the existing seven public functions.
+
+**Design decision: `open_store()` vs extending `open_raster()`**
+
+A separate function rather than overloading `open_raster()` because:
+
+- The data model is different: 3D+ cubes with a `wavelength` axis, not 2D rasters with optional `time`.
+- The kwargs are different: `wavelengths=` makes no sense for COGs; `years=`/`months=`/`date_start=`/`date_end=` make no sense for single-mosaic spectrometer stores.
+- The backend is different: icechunk → Zarr vs. rioxarray → GDAL VSICURL.
+- Users can tell at a glance which storage model they're hitting.
+
+The return type is the same (`xr.Dataset`), and the standardized coord names (`x`, `y`, CRS set) mean all downstream functions (`extract_*`, `rio.*`, `plot.*`) compose identically. The "one return type, multiple openers" pattern matches rioxarray's own design (`open_rasterio` for COGs, `open_zarr` for Zarr).
+
+#### Phase 10c — Extraction compatibility verification (~1 day)
+
+With `standardize_coords=True` (the default), `extract_points` and `extract_polygons` should work on icechunk-backed Datasets without code changes — the coord names and CRS already match what the extraction functions expect.
+
+Verify and document:
+
+- Point extraction on a 3D cube requires band selection first: `ds.sel(wavelength=850)` before `extract_points()`. The extraction functions operate on 2D spatial slices; passing a 3D cube without reducing the band dimension raises a descriptive error.
+- Zonal stats work per-band if the band dimension is present (xvec iterates over non-spatial dims).
+- Dask chunking propagates through extraction (lazy in → lazy out, `.compute()` at the end).
+- Performance: same-region S3 reads at Zarr chunk granularity (25 × 500 × 500 ≈ 2 MB per chunk) should be fast; test and document latency expectations.
+
+#### Phase 10d — Docs + user guide (~1 day)
+
+New guide: `docs/guides/array-stores.md` — "Working with hyperspectral and high-dimensional SDP data":
+
+- Discovery: `get_catalog(backend_types=["icechunk"])`
+- Opening: `open_store()` with band selection and spatial subsetting
+- NDVI recipe: `ds.sel(wavelength=[660, 850])` → normalized difference → `.compute()`
+- Extraction at field sites: `.sel(wavelength=850)` → `extract_points()`
+- Full-mosaic analysis with Dask: reduce-before-compute pattern, worker tuning
+- Performance tips: chunk-aligned spatial slicing, when to use `open_store(bbox=...)` vs full mosaic
+- Saving results: NetCDF, GeoTIFF via rioxarray, Zarr
+
+This guide replaces the current tutorial notebook pattern (`01_distributed_analysis_with_dask.ipynb`) with a docs-site-hosted walkthrough that's discoverable alongside the COG guides.
+
+#### Open questions (to resolve before implementation)
+
+1. **How many icechunk stores exist today, and how many are planned?** If 3–5, extending the existing catalog CSV is clean. If dozens with rapid growth, a separate catalog or a STAC-based discovery mechanism makes more sense.
+2. **Are all stores on `rmbl-chess-data` or also on `rmbl-sdp`?** Determines whether `open_store()` needs to handle multiple buckets.
+3. **Auth: always anonymous?** The current tutorial uses `anonymous=True`. If some stores will require IRSA credentials (e.g., embargoed pre-publication data), `open_store()` needs an `anonymous=` flag that defaults to whatever the catalog says per-product.
+4. **Coord naming convention**: is `easting`/`northing` standard across all icechunk stores, or do some use `x`/`y` natively? Determines how robust the rename logic needs to be.
+5. **Time dimension**: the current AOP stores are one mosaic per domain/year (no `time` dim). Will future stores have a `time` axis (e.g., multi-year climate cubes)? If so, `open_store()` should accept `date_start`/`date_end` for those.
+6. **VirtualiZarr version pinning**: the VirtualiZarr + icechunk ecosystem is moving fast (both < 1.0). Pin conservatively and document the tested version matrix.
+
 ## 4. Prerequisites on the Hub (not pySDP work)
 
 These changes live in `~/code/CHESS_Analysis_Hub` and are required before Phase 7 becomes meaningful:
@@ -159,7 +260,7 @@ Long-term intent is that rSDP offer comparable (but scoped-down) Hub integration
 
 - **xarray accessor pattern** (`ds.pysdp.extract_points(gdf)`, `ds.pysdp.to_sites(...)`, etc.). rioxarray ships `ds.rio.*`; some packages like it, some hate it. Trade-off is discoverability (users find methods on their Dataset) vs. hidden magic (methods that aren't obviously from pySDP). Not enough user data yet to decide; revisit after Phase 7 ships and we see how users actually write pySDP code.
 
-## 8. References
+## 9. References
 
 - [Hub exploration notes from this doc's scoping phase](../CHESS_Analysis_Hub/SPECIFICATION.md) — Hub architecture + deployment
 - [SPEC.md §9](./SPEC.md#9-phased-porting-plan) — v0.1 phases 0–6
@@ -171,3 +272,6 @@ Long-term intent is that rSDP offer comparable (but scoped-down) Hub integration
 - [Pangeo Discourse: Advice for scalable raster-vector extraction](https://discourse.pangeo.io/t/advice-for-scalable-raster-vector-extraction/4129) — the state of the art on distributed extraction (i.e., there isn't one)
 - [Planetary Computer: Scale with Dask](https://planetarycomputer.microsoft.com/docs/quickstarts/scale-with-dask/) — reference implementation for the "tell users the 3-liner" docs pattern
 - [CryoCloud: Dask for Geoscientists](https://book.cryointhecloud.com/tutorials/dask_for_geoscientists.html) — another reference implementation
+- [icechunk documentation](https://icechunk.io/) — cloud-native versioned data store for Zarr
+- [VirtualiZarr](https://virtualizarr.readthedocs.io/) — virtual Zarr datasets referencing existing netCDF/HDF5/TIFF files
+- [CHESS Hub AOP tutorial](../CHESS_Analysis_Hub/docker/tutorials/01_distributed_analysis_with_dask.ipynb) — current access pattern for icechunk-backed spectrometer mosaics
