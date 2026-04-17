@@ -90,9 +90,9 @@ ug_elev[next(iter(ug_elev.data_vars))].plot.imshow(cmap="terrain", robust=True)
 plt.gca().set_aspect("equal")
 ```
 
-![Coarsened GMUG DEM overview](assets/dem_overview.png)
+![Coarsened UG 3 m DEM overview](assets/dem_overview.png)
 
-*(The DEM here is the GMUG 9 m version, downsampled for fast rendering in the docs; the 3 m UG DEM is ~64× larger per read.)*
+*(The DEM here is downsampled by a factor of 60 for fast rendering in the docs; the full 3 m resolution is ~584 million cells and about 1 GB per read.)*
 
 Cropping to an area of interest only fetches the portion of the COG that intersects the bounding box:
 

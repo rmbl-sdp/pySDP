@@ -13,8 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `scripts/build_guide_assets.py` from real SDP data). Guides
   `cloud-data.md`, `field-sampling.md`, and `pretty-maps.md` now
   include rendered images / iframes showing domain coverage, field
-  sites on the GMUG DEM, extracted elevation values, and multi-panel
-  overlays. All 8 assets live at `docs/guides/assets/` (~1.6 MB total).
+  sites on the UG 3 m bare-earth DEM (R3D009 — matching the rSDP
+  vignettes), extracted elevations, and multi-panel overlays. All 8
+  assets live at `docs/guides/assets/`. The asset script aggressively
+  coarsens the 1 GB DEM before plotting (factor 60×60) so docs pages
+  stay lightweight.
 - `mapclassify>=2.6` added to the `[viz]` extra (required by
   `GeoDataFrame.explore(column=...)`).
 

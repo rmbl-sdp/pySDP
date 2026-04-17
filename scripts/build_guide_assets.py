@@ -28,9 +28,12 @@ import folium  # noqa: E402
 import geopandas as gpd  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
+import rioxarray  # noqa: E402
 from shapely.geometry import Point  # noqa: E402
 
 import pysdp  # noqa: E402
+from pysdp._catalog_data import lookup_catalog_row  # noqa: E402
+from pysdp.constants import VSICURL_PREFIX  # noqa: E402
 
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "docs" / "guides" / "assets"
 DOMAIN_GEOJSON_BASE = "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/supplemental/"
@@ -54,6 +57,25 @@ def _should_skip(path: Path, skip_existing: bool) -> bool:
         _say(f"  skip (exists): {path.name}")
         return True
     return False
+
+
+def _open_dem_overview(
+    catalog_id: str = "R3D009", *, overview_level: int = 4
+) -> rioxarray.xarray.DataArray:
+    """Open a DEM at a reduced COG-overview level for fast, network-light plotting.
+
+    COGs contain pre-computed overviews (2×, 4×, 8×, 16×, ...).
+    ``overview_level=4`` on the 3 m UG DEM reads the ~48 m pyramid —
+    ~1 600 × 1 400 pixels instead of 25 729 × 22 715 — fetching
+    roughly 1% of the data. Much faster and more robust than reading
+    all tiles and coarsening in Python.
+    """
+    row = lookup_catalog_row(catalog_id)
+    path = VSICURL_PREFIX + str(row["Data.URL"])
+    da = rioxarray.open_rasterio(path, overview_level=overview_level)
+    if da.sizes.get("band", 1) == 1:
+        da = da.squeeze("band", drop=True)
+    return da.rio.write_crs("EPSG:32613")
 
 
 # ---------------------------------------------------------------------------
@@ -113,17 +135,11 @@ def make_dem_overview(out: Path, skip_existing: bool) -> None:
     if _should_skip(out, skip_existing):
         return
     _say(f"  building {out.name} (UG DEM overview plot)")
-    # Use the 9 m GMUG DEM — much smaller than the 3 m UG DEM and covers a
-    # comparable footprint. Still ~500 MB to fetch fully, so downsample by
-    # taking every Nth pixel before plotting.
-    dem = pysdp.open_raster("R5D009", verbose=False, chunks=None)
-    var = dem[next(iter(dem.data_vars))]
-    # Coarsen to keep the plot snappy; the viz doesn't need full resolution.
-    coarse = var.coarsen(x=20, y=20, boundary="trim").mean()
-    fig, ax = plt.subplots(figsize=(9, 6))
-    coarse.plot.imshow(ax=ax, cmap="terrain", robust=True, cbar_kwargs={"label": "Elevation (m)"})
+    da = _open_dem_overview("R3D009", overview_level=4)
+    fig, ax = plt.subplots(figsize=(8, 9))
+    da.plot.imshow(ax=ax, cmap="terrain", robust=True, cbar_kwargs={"label": "Elevation (m)"})
     ax.set_aspect("equal")
-    ax.set_title("GMUG bare-earth DEM (9 m, downsampled for docs)")
+    ax.set_title("UG bare-earth DEM (3 m, downsampled for docs)")
     ax.set_xlabel("UTM Easting (m)")
     ax.set_ylabel("UTM Northing (m)")
     plt.tight_layout()
@@ -135,18 +151,16 @@ def make_sites_over_dem(out: Path, skip_existing: bool) -> None:
     if _should_skip(out, skip_existing):
         return
     _say(f"  building {out.name} (field sites on DEM)")
-    dem = pysdp.open_raster("R5D009", verbose=False, chunks=None)
-    var = dem[next(iter(dem.data_vars))]
-    coarse = var.coarsen(x=30, y=30, boundary="trim").mean()
-    fig, ax = plt.subplots(figsize=(9, 7))
-    coarse.plot.imshow(
+    da = _open_dem_overview("R3D009", overview_level=4)
+    fig, ax = plt.subplots(figsize=(8, 9))
+    da.plot.imshow(
         ax=ax,
         cmap="Greys_r",
         alpha=0.85,
         cbar_kwargs={"label": "Elevation (m)"},
         robust=True,
     )
-    sites_utm = RMBL_FIELD_SITES.to_crs(dem.rio.crs)
+    sites_utm = RMBL_FIELD_SITES.to_crs(da.rio.crs)
     sites_utm.plot(ax=ax, color="crimson", markersize=90, marker="^", edgecolor="white")
     for _, row in sites_utm.iterrows():
         ax.annotate(
@@ -158,7 +172,7 @@ def make_sites_over_dem(out: Path, skip_existing: bool) -> None:
             color="white",
             bbox={"boxstyle": "round,pad=0.25", "fc": "black", "alpha": 0.7},
         )
-    ax.set_title("Three RMBL field sites on the GMUG DEM")
+    ax.set_title("Three RMBL field sites on the UG 3 m DEM")
     ax.set_aspect("equal")
     ax.set_xlabel("UTM Easting (m)")
     ax.set_ylabel("UTM Northing (m)")
@@ -171,17 +185,19 @@ def make_extracted_values_plot(out: Path, skip_existing: bool) -> None:
     if _should_skip(out, skip_existing):
         return
     _say(f"  building {out.name} (extracted-values bar chart)")
-    # Use the GMUG DEM (covers Gothic only) — skip the other two sites for
-    # this plot since they fall outside GMUG. Extract at just Gothic for a
-    # quick asset.
-    dem = pysdp.open_raster("R5D009", verbose=False, chunks=None)
-    out_gdf = pysdp.extract_points(dem, RMBL_FIELD_SITES, method="nearest", verbose=False)
+    # Pre-clip the 1 GB UG DEM to a buffer around the field sites so the
+    # extraction fetches only a small region instead of the whole raster.
+    dem = pysdp.open_raster("R3D009", verbose=False, chunks=None)
+    sites_utm = RMBL_FIELD_SITES.to_crs(dem.rio.crs)
+    minx, miny, maxx, maxy = sites_utm.total_bounds
+    cropped = dem.rio.clip_box(minx - 500, miny - 500, maxx + 500, maxy + 500)
+    out_gdf = pysdp.extract_points(cropped, RMBL_FIELD_SITES, method="nearest", verbose=False)
     var_col = [c for c in out_gdf.columns if "dem" in c.lower()][0]
     fig, ax = plt.subplots(figsize=(7, 4))
     plot_df = out_gdf[["site", var_col]].dropna().rename(columns={var_col: "Elevation (m)"})
     ax.bar(plot_df["site"], plot_df["Elevation (m)"], color="steelblue", edgecolor="black")
     ax.set_ylabel("Elevation (m)")
-    ax.set_title("Elevation at RMBL field sites (GMUG 9 m DEM)")
+    ax.set_title("Elevation at RMBL field sites (UG 3 m DEM)")
     ax.grid(axis="y", linestyle="--", alpha=0.4)
     for i, v in enumerate(plot_df["Elevation (m)"]):
         ax.text(i, v + 20, f"{v:,.0f} m", ha="center", fontsize=9)
@@ -194,13 +210,11 @@ def make_pretty_map_basic(out: Path, skip_existing: bool) -> None:
     if _should_skip(out, skip_existing):
         return
     _say(f"  building {out.name} (basic matplotlib DEM plot)")
-    dem = pysdp.open_raster("R5D009", verbose=False, chunks=None)
-    var = dem[next(iter(dem.data_vars))]
-    coarse = var.coarsen(x=20, y=20, boundary="trim").mean()
-    fig, ax = plt.subplots(figsize=(9, 6))
-    coarse.plot.imshow(ax=ax, cmap="terrain", robust=True)
+    da = _open_dem_overview("R3D009", overview_level=4)
+    fig, ax = plt.subplots(figsize=(8, 9))
+    da.plot.imshow(ax=ax, cmap="terrain", robust=True)
     ax.set_aspect("equal")
-    ax.set_title("GMUG bare-earth DEM, 9 m")
+    ax.set_title("UG bare-earth DEM, 3 m")
     plt.tight_layout()
     plt.savefig(out, dpi=130, bbox_inches="tight")
     plt.close()
@@ -210,14 +224,12 @@ def make_pretty_map_overlay(out: Path, skip_existing: bool) -> None:
     if _should_skip(out, skip_existing):
         return
     _say(f"  building {out.name} (DEM + domains + sites overlay)")
-    dem = pysdp.open_raster("R5D009", verbose=False, chunks=None)
-    var = dem[next(iter(dem.data_vars))]
-    coarse = var.coarsen(x=20, y=20, boundary="trim").mean()
-    bounds = _load_domain_bounds(simplify_tolerance_m=100).to_crs(dem.rio.crs)
-    sites_utm = RMBL_FIELD_SITES.to_crs(dem.rio.crs)
+    da = _open_dem_overview("R3D009", overview_level=4)
+    bounds = _load_domain_bounds(simplify_tolerance_m=100).to_crs(da.rio.crs)
+    sites_utm = RMBL_FIELD_SITES.to_crs(da.rio.crs)
 
-    fig, ax = plt.subplots(figsize=(10, 7))
-    coarse.plot.imshow(
+    fig, ax = plt.subplots(figsize=(9, 10))
+    da.plot.imshow(
         ax=ax,
         cmap="Greys_r",
         alpha=0.8,
@@ -231,7 +243,7 @@ def make_pretty_map_overlay(out: Path, skip_existing: bool) -> None:
         linestyle="--",
     )
     sites_utm.plot(ax=ax, color="crimson", markersize=80, marker="^", edgecolor="white")
-    ax.set_title("GMUG DEM + SDP domain boundaries + RMBL field sites")
+    ax.set_title("UG 3 m DEM + SDP domain boundaries + RMBL field sites")
     ax.set_aspect("equal")
     ax.set_xlabel("UTM Easting (m)")
     ax.set_ylabel("UTM Northing (m)")
@@ -244,15 +256,15 @@ def make_pretty_map_zoomed(out: Path, skip_existing: bool) -> None:
     if _should_skip(out, skip_existing):
         return
     _say(f"  building {out.name} (zoomed Gothic valley DEM)")
-    dem = pysdp.open_raster("R5D009", verbose=False, chunks=None)
-    var = dem[next(iter(dem.data_vars))]
-    # Zoom to ~5 km buffer around Gothic
-    gothic_utm = RMBL_FIELD_SITES.iloc[[1]].to_crs(dem.rio.crs).geometry.iloc[0]
+    # For the zoomed view, use a lower overview level (higher res) since
+    # the spatial extent is small (5 km × 5 km).
+    da = _open_dem_overview("R3D009", overview_level=2)
+    gothic_utm = RMBL_FIELD_SITES.iloc[[1]].to_crs(da.rio.crs).geometry.iloc[0]
     cx, cy = gothic_utm.x, gothic_utm.y
     buffer_m = 5_000
     xmin, xmax = cx - buffer_m, cx + buffer_m
     ymin, ymax = cy - buffer_m, cy + buffer_m
-    clipped = var.rio.clip_box(xmin, ymin, xmax, ymax)
+    clipped = da.rio.clip_box(xmin, ymin, xmax, ymax)
 
     fig, ax = plt.subplots(figsize=(8, 7))
     clipped.plot.imshow(ax=ax, cmap="terrain", robust=True)
@@ -267,7 +279,7 @@ def make_pretty_map_zoomed(out: Path, skip_existing: bool) -> None:
         color="white",
         bbox={"boxstyle": "round,pad=0.3", "fc": "black", "alpha": 0.7},
     )
-    ax.set_title("Gothic valley — 9 m DEM (±5 km)")
+    ax.set_title("Gothic valley — 3 m DEM (±5 km)")
     ax.set_aspect("equal")
     ax.set_xlabel("UTM Easting (m)")
     ax.set_ylabel("UTM Northing (m)")

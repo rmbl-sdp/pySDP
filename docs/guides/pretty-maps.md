@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 ```python
 # Digital elevation model — the base layer for most maps
-dem = pysdp.open_raster("R5D009", chunks=None)  # GMUG 9 m DEM; smaller than UG 3 m
+dem = pysdp.open_raster("R3D009", chunks=None)  # UG 3 m bare-earth DEM
 
 # Vector overlays — load any GeoJSON / GPKG / Shapefile with geopandas
 bounds = gpd.read_file(
@@ -35,16 +35,18 @@ bounds = gpd.read_file(
 ## Basic raster map with matplotlib
 
 ```python
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(8, 9))
 dem[next(iter(dem.data_vars))].plot.imshow(ax=ax, cmap="terrain", robust=True)
 ax.set_aspect("equal")
-ax.set_title("GMUG bare-earth DEM (9 m)")
+ax.set_title("UG bare-earth DEM (3 m)")
 plt.tight_layout()
 ```
 
 `.plot.imshow()` is xarray's matplotlib wrapper — it handles colorbars, axis labels, and CRS-aware extent automatically. `robust=True` clips extreme outliers so the colormap stays useful.
 
-![Basic GMUG DEM plot](assets/pretty_basic.png)
+*Tip:* at full resolution the 3 m DEM is ~584 M cells, which is too much to plot directly. Downsample first with `dem.coarsen(x=60, y=60, boundary="trim").mean()` (or pre-crop to your AOI) before plotting.
+
+![Basic UG 3 m DEM plot](assets/pretty_basic.png)
 
 ## Web maps with folium
 
@@ -114,7 +116,7 @@ sites = gpd.GeoDataFrame(
 ).to_crs(dem.rio.crs)
 sites.plot(ax=ax, color="crimson", markersize=80, marker="^", edgecolor="white")
 
-ax.set_title("GMUG DEM + SDP domain boundaries + RMBL field sites")
+ax.set_title("UG 3 m DEM + SDP domain boundaries + RMBL field sites")
 ax.set_aspect("equal")
 plt.tight_layout()
 ```
@@ -136,7 +138,7 @@ clipped = dem[next(iter(dem.data_vars))].rio.clip_box(
 
 fig, ax = plt.subplots(figsize=(8, 7))
 clipped.plot.imshow(ax=ax, cmap="terrain", robust=True)
-ax.set_title("Gothic valley — 9 m DEM (±5 km)")
+ax.set_title("Gothic valley — 3 m DEM (±5 km)")
 ax.set_aspect("equal")
 ```
 

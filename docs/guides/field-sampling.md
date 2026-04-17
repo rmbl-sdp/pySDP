@@ -66,13 +66,13 @@ pySDP auto-reprojects the points to the raster's CRS (`EPSG:32613` for all SDP r
 
 Three field sites plotted on the DEM (Roaring Judy, Gothic, Galena Lake span the Gunnison basin):
 
-![Three RMBL field sites on the GMUG DEM](assets/sites_over_dem.png)
+![Three RMBL field sites on the UG 3 m DEM](assets/sites_over_dem.png)
 
 And the extracted elevations as a simple bar chart:
 
 ![Extracted elevations at the three field sites](assets/extracted_values.png)
 
-*(The plot uses the GMUG 9 m DEM; only Gothic falls within GMUG, so the bar chart shows that one site. The extraction code above works identically against the UG 3 m DEM — same API, just slower to run on the larger raster.)*
+*(Both plots use the UG 3 m bare-earth DEM (R3D009), the same product the rSDP vignettes use. The bar-chart extraction crops the raster to a bounding box around the three sites first — on a ~1 GB COG, cropping before extracting drops the wall-clock cost from minutes to seconds.)*
 
 ## Buffered extraction at points with summaries
 
