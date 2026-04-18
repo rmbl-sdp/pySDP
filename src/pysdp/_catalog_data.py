@@ -136,7 +136,26 @@ def _read_catalog_csv(buffer: io.BytesIO) -> pd.DataFrame:
     df["Deprecated"] = df["Deprecated"].astype(bool)
     df["MinDate"] = _parse_sdp_dates(df["MinDate"])
     df["MaxDate"] = _parse_sdp_dates(df["MaxDate"])
+    df["Thumbnail.URL"] = df.apply(_derive_thumbnail_url, axis=1)
     return df
+
+
+def _derive_thumbnail_url(row: pd.Series) -> str:
+    """Derive a thumbnail PNG URL from a catalog row's Data.URL.
+
+    Convention (matches ``stac-gen/lib/stac_builder.py``):
+    - Single products: replace ``.tif`` with ``_thumbnail.png``.
+    - Time-series: the Data.URL template lives in a product subdirectory;
+      the thumbnail is ``{subdir}_thumbnail.png`` in the parent directory.
+    """
+    url = str(row.get("Data.URL", ""))
+    if not url:
+        return ""
+    if row.get("TimeSeriesType") == "Single":
+        return url.replace(".tif", "_thumbnail.png")
+    dir_url = url.rsplit("/", 1)[0]
+    parent, stem = dir_url.rsplit("/", 1)
+    return f"{parent}/{stem}_thumbnail.png"
 
 
 def load_packaged_catalog(*, emit_warning: bool = True) -> pd.DataFrame:

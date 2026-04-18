@@ -13,6 +13,7 @@ except ImportError:
     except PackageNotFoundError:
         __version__ = "0.0.0+unknown"
 
+from pysdp.browse import browse
 from pysdp.catalog import get_catalog, get_metadata
 from pysdp.constants import DOMAINS, RELEASES, SDP_CRS, TIMESERIES_TYPES, TYPES
 from pysdp.download import download
@@ -26,6 +27,7 @@ __all__ = [
     "TIMESERIES_TYPES",
     "TYPES",
     "__version__",
+    "browse",
     "download",
     "extract_points",
     "extract_polygons",
