@@ -129,8 +129,13 @@ def _card_html(row: pd.Series, width: int) -> str:
 
 
 def _grid_html(df: pd.DataFrame, *, columns: int, width: int, title: str | None) -> str:
-    """Render the full grid as an HTML string."""
-    cards = "\n".join(_card_html(row, width) for _, row in df.iterrows())
+    """Render the full grid as an HTML table.
+
+    Uses ``<table>`` rather than CSS grid because JupyterLab's HTML
+    sanitizer strips or ignores ``display: grid`` in output cells.
+    Tables render reliably in every notebook environment.
+    """
+    card_list = [_card_html(row, width) for _, row in df.iterrows()]
     title_html = ""
     if title:
         title_html = (
@@ -139,17 +144,25 @@ def _grid_html(df: pd.DataFrame, *, columns: int, width: int, title: str | None)
             f'color: #888; margin-bottom: 10px;">'
             f"{escape(title)}</div>"
         )
+
+    rows_html: list[str] = []
+    for i in range(0, len(card_list), columns):
+        chunk = card_list[i : i + columns]
+        cells = "".join(
+            f'<td style="width:{width}px; vertical-align:top; padding:5px;">{card}</td>'
+            for card in chunk
+        )
+        # Pad incomplete final row with empty cells
+        for _ in range(columns - len(chunk)):
+            cells += f'<td style="width:{width}px;"></td>'
+        rows_html.append(f"<tr>{cells}</tr>")
+
     return f"""\
 <div>
 {title_html}
-<div style="
-    display: grid;
-    grid-template-columns: repeat({columns}, minmax({width}px, 1fr));
-    gap: 10px;
-    max-width: {columns * (width + 20)}px;
-">
-{cards}
-</div>
+<table style="border-collapse: separate; border-spacing: 0;">
+{"".join(rows_html)}
+</table>
 </div>"""
 
 

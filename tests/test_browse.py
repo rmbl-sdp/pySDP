@@ -54,8 +54,13 @@ class TestBrowse:
     def test_columns_param_affects_grid(self) -> None:
         r3 = browse(domains=["UG"], columns=3)
         r5 = browse(domains=["UG"], columns=5)
-        assert "repeat(3," in r3._repr_html_()
-        assert "repeat(5," in r5._repr_html_()
+        # Table layout: first <tr> should have `columns` <td> elements
+        import re
+
+        tds_r3 = re.findall(r"<td", r3._repr_html_().split("</tr>")[0])
+        tds_r5 = re.findall(r"<td", r5._repr_html_().split("</tr>")[0])
+        assert len(tds_r3) == 3
+        assert len(tds_r5) == 5
 
     def test_browse_accessible_from_top_level(self) -> None:
         assert hasattr(pysdp, "browse")
