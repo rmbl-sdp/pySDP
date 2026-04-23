@@ -33,32 +33,38 @@ class TestBrowse:
         result = browse(domains=["UG"], types=["Vegetation"])
         assert isinstance(result, CatalogBrowser)
 
-    def test_repr_html_contains_img_tags(self) -> None:
+    def test_repr_html_is_iframe(self) -> None:
         result = browse(domains=["UG"], types=["Vegetation"])
-        html = result._repr_html_()
+        iframe = result._repr_html_()
+        assert "<iframe" in iframe
+        assert "srcdoc=" in iframe
+
+    def test_raw_html_contains_img_tags(self) -> None:
+        result = browse(domains=["UG"], types=["Vegetation"])
+        html = str(result)
         assert "<img" in html
         assert "thumbnail" in html.lower()
 
     def test_max_products_limits_cards(self) -> None:
         full = browse(domains=["UG"])
         limited = browse(domains=["UG"], max_products=3)
-        assert limited._repr_html_().count("<img") == 3
-        assert full._repr_html_().count("<img") > 3
+        assert str(limited).count("<img") == 3
+        assert str(full).count("<img") > 3
 
     def test_filters_reflected_in_title(self) -> None:
         result = browse(domains=["UG"], types=["Topo"])
-        html = result._repr_html_()
+        html = str(result)
         assert "domains=" in html
         assert "types=" in html
 
     def test_columns_param_affects_grid(self) -> None:
+        import re
+
         r3 = browse(domains=["UG"], columns=3)
         r5 = browse(domains=["UG"], columns=5)
         # Table layout: first <tr> should have `columns` <td> elements
-        import re
-
-        tds_r3 = re.findall(r"<td", r3._repr_html_().split("</tr>")[0])
-        tds_r5 = re.findall(r"<td", r5._repr_html_().split("</tr>")[0])
+        tds_r3 = re.findall(r"<td", str(r3).split("</tr>")[0])
+        tds_r5 = re.findall(r"<td", str(r5).split("</tr>")[0])
         assert len(tds_r3) == 3
         assert len(tds_r5) == 5
 

@@ -169,23 +169,41 @@ def _grid_html(df: pd.DataFrame, *, columns: int, width: int, title: str | None)
 class CatalogBrowser:
     """A displayable grid of SDP product thumbnails.
 
-    In Jupyter, this renders as an interactive HTML grid. The rendering
-    uses ``IPython.display.HTML`` when available (via ``_ipython_display_``),
-    which is more reliable than ``_repr_html_`` across JupyterLab versions.
+    In Jupyter, this renders inside an ``<iframe srcdoc="...">`` so that
+    JupyterLab's HTML sanitizer (which strips inline styles, ``position``,
+    ``background``, etc.) doesn't interfere with the card layout and
+    thumbnail rendering. This is the same pattern ``folium`` uses to
+    display interactive maps in notebooks.
+
     Outside notebooks, ``str(browser)`` returns the raw HTML string.
     """
 
-    def __init__(self, html: str) -> None:
+    def __init__(self, html: str, *, n_rows: int) -> None:
         self._html = html
-
-    def _ipython_display_(self, **kwargs: object) -> None:
-        """Jupyter display protocol — uses IPython.display.HTML for reliable rendering."""
-        from IPython.display import HTML, display
-
-        display(HTML(self._html))  # type: ignore[no-untyped-call]
+        self._n_rows = n_rows
 
     def _repr_html_(self) -> str:
-        return self._html
+        """Render via an iframe to bypass JupyterLab's HTML sanitizer."""
+        import html as html_mod
+
+        # Full standalone HTML page inside the iframe.
+        page = (
+            "<!DOCTYPE html>"
+            '<html><head><meta charset="utf-8"></head>'
+            f'<body style="margin:0; padding:10px; background:transparent; '
+            f"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', "
+            f'Roboto, sans-serif;">'
+            f"{self._html}"
+            "</body></html>"
+        )
+        escaped = html_mod.escape(page)
+        # Estimate height: ~210px per row of cards + 40px for title.
+        height = self._n_rows * 210 + 40
+        return (
+            f'<iframe srcdoc="{escaped}" '
+            f'style="width:100%; height:{height}px; border:none;" '
+            f'loading="lazy"></iframe>'
+        )
 
     def __str__(self) -> str:
         return self._html
@@ -285,7 +303,8 @@ def browse(
         title += f" — {', '.join(filters)}"
 
     html = _grid_html(df, columns=columns, width=width, title=title)
-    return CatalogBrowser(html)
+    n_rows = (len(df) + columns - 1) // columns  # ceiling division
+    return CatalogBrowser(html, n_rows=n_rows)
 
 
 __all__ = ["browse"]
