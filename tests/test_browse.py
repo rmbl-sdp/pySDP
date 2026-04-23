@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pysdp
-from pysdp.browse import CatalogBrowser, browse
+from pysdp.browse import CatalogBrowser, _browser_url, _product_to_slug, browse
 
 
 class TestThumbnailUrl:
@@ -60,3 +60,30 @@ class TestBrowse:
     def test_browse_accessible_from_top_level(self) -> None:
         assert hasattr(pysdp, "browse")
         assert pysdp.browse is browse
+
+    def test_cards_contain_sdp_browser_links(self) -> None:
+        result = browse(domains=["UG"], types=["Vegetation"])
+        html = result._repr_html_()
+        assert "sdpbrowser.org" in html
+        assert "Open in SDP Browser" in html
+
+    def test_cards_contain_open_raster_snippet(self) -> None:
+        result = browse(domains=["UG"], types=["Vegetation"], max_products=1)
+        html = result._repr_html_()
+        assert 'pysdp.open_raster("' in html
+
+
+class TestSlugAndBrowserUrl:
+    def test_product_to_slug(self) -> None:
+        assert _product_to_slug("Basic Landcover") == "basic-landcover"
+        assert _product_to_slug("20th Percentile Canopy Height") == "20th-percentile-canopy-height"
+        assert _product_to_slug("October 2017 NAIP NDVI") == "october-2017-naip-ndvi"
+
+    def test_browser_url_contains_slug(self) -> None:
+        url = _browser_url("Basic Landcover")
+        assert "sdpbrowser.org" in url
+        assert "basic-landcover" in url
+
+    def test_browser_url_encodes_layer_param(self) -> None:
+        url = _browser_url("Basic Landcover")
+        assert "#layers=" in url

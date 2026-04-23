@@ -3,12 +3,18 @@
 Renders an HTML grid of SDP product thumbnails with overlaid metadata,
 making catalog discovery visual rather than tabular. Works in JupyterLab,
 classic Notebook, and VS Code notebooks.
+
+Clicking a card reveals an action overlay with:
+- "Open in SDP Browser" link (opens the product in the web map viewer)
+- A copyable ``open_raster()`` code snippet
 """
 
 from __future__ import annotations
 
+import re
 from html import escape
 from typing import TYPE_CHECKING, Literal, cast
+from urllib.parse import quote
 
 from pysdp.catalog import get_catalog
 
@@ -18,24 +24,56 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
+SDP_BROWSER_BASE = "https://sdpbrowser.org/"
+
+
+def _product_to_slug(product_name: str) -> str:
+    """Convert a catalog Product name to a URL-safe slug.
+
+    Mirrors ``stac-gen/lib/slugs.py::product_to_slug``.
+    """
+    slug = product_name.lower().strip()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    return slug.strip("-")
+
+
+def _browser_url(product_name: str) -> str:
+    """Build an SDP Browser URL that opens this product as a map layer."""
+    slug = _product_to_slug(product_name)
+    layer_param = quote(f"id={slug}", safe="")
+    return f"{SDP_BROWSER_BASE}#layers={layer_param}"
+
+
 def _card_html(row: pd.Series, width: int) -> str:
-    """Render one product card as an HTML string."""
+    """Render one product card as an HTML string with a click-to-reveal action overlay."""
     cat_id = escape(str(row.get("CatalogID", "")))
     product = escape(str(row.get("Product", "")))
     domain = escape(str(row.get("Domain", "")))
     resolution = escape(str(row.get("Resolution", "")))
     ts_type = escape(str(row.get("TimeSeriesType", "")))
     thumb = str(row.get("Thumbnail.URL", ""))
+    browser_link = _browser_url(str(row.get("Product", "")))
+    open_call = f'pysdp.open_raster("{cat_id}")'
+
+    # Unique ID for the action overlay toggle (avoids CSS class collisions
+    # in notebooks with multiple browse() outputs).
+    uid = f"sdp-{cat_id}"
 
     return f"""\
-<div style="
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #1a1a2e;
-    cursor: default;
-    min-height: 160px;
-">
+<div id="{uid}"
+     onclick="(function(){{
+         var a=document.getElementById('{uid}').querySelector('.sdp-actions');
+         a.style.display = a.style.display==='flex' ? 'none' : 'flex';
+     }})()"
+     style="
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #1a1a2e;
+        cursor: pointer;
+        min-height: 160px;
+     "
+>
     <img src="{thumb}"
          alt="{cat_id}"
          loading="lazy"
@@ -47,6 +85,7 @@ def _card_html(row: pd.Series, width: int) -> str:
          "
          onerror="this.style.display='none'"
     >
+    <!-- Product info overlay (always visible) -->
     <div style="
         position: absolute;
         bottom: 0; left: 0; right: 0;
@@ -70,6 +109,48 @@ def _card_html(row: pd.Series, width: int) -> str:
         <div style="font-size: 11px; opacity: 0.75;">
             {domain} &middot; {resolution} &middot; {ts_type}
         </div>
+    </div>
+    <!-- Action overlay (shown on click) -->
+    <div class="sdp-actions" style="
+        display: none;
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.88);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 16px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    ">
+        <a href="{browser_link}"
+           target="_blank"
+           rel="noopener"
+           onclick="event.stopPropagation()"
+           style="
+              display: inline-block;
+              padding: 8px 16px;
+              background: #4CAF50;
+              color: white;
+              border-radius: 6px;
+              text-decoration: none;
+              font-size: 13px;
+              font-weight: 600;
+           "
+        >Open in SDP Browser &nearr;</a>
+        <code onclick="
+            event.stopPropagation();
+            if(navigator.clipboard){{navigator.clipboard.writeText('{open_call}');this.style.background='#3a5a3a';}}
+        " style="
+            background: rgba(255,255,255,0.12);
+            color: #ddd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: copy;
+            user-select: all;
+            transition: background 0.2s;
+        " title="Click to copy">{open_call}</code>
     </div>
 </div>"""
 
@@ -135,6 +216,15 @@ def browse(
     Accepts the same filter arguments as :func:`get_catalog` and displays
     each matching product as a card with its thumbnail image + overlaid
     metadata (CatalogID, product name, domain, resolution, time-series type).
+
+    **Clicking a card** reveals an action overlay with:
+
+    - **Open in SDP Browser** — opens the product in the
+      `SDP Browser <https://sdpbrowser.org/>`_ web map viewer (new tab).
+    - **Code snippet** — a copyable ``pysdp.open_raster("...")`` call
+      (click to copy to clipboard).
+
+    Click again to dismiss the overlay.
 
     Parameters
     ----------
