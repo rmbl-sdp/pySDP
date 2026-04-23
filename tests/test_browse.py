@@ -70,7 +70,7 @@ class TestBrowse:
     def test_cards_contain_open_raster_snippet(self) -> None:
         result = browse(domains=["UG"], types=["Vegetation"], max_products=1)
         html = result._repr_html_()
-        assert 'pysdp.open_raster("' in html
+        assert "pysdp.open_raster(" in html
 
 
 class TestSlugAndBrowserUrl:

@@ -4,9 +4,9 @@ Renders an HTML grid of SDP product thumbnails with overlaid metadata,
 making catalog discovery visual rather than tabular. Works in JupyterLab,
 classic Notebook, and VS Code notebooks.
 
-Clicking a card reveals an action overlay with:
-- "Open in SDP Browser" link (opens the product in the web map viewer)
-- A copyable ``open_raster()`` code snippet
+Each card shows the product thumbnail with a persistent "Open in SDP
+Browser" link and a copyable ``open_raster()`` code snippet — no
+JavaScript required (JupyterLab's sanitizer strips JS from HTML output).
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ def _browser_url(product_name: str) -> str:
 
 
 def _card_html(row: pd.Series, width: int) -> str:
-    """Render one product card as an HTML string with a click-to-reveal action overlay."""
+    """Render one product card as pure HTML (no JavaScript)."""
     cat_id = escape(str(row.get("CatalogID", "")))
     product = escape(str(row.get("Product", "")))
     domain = escape(str(row.get("Domain", "")))
@@ -53,27 +53,17 @@ def _card_html(row: pd.Series, width: int) -> str:
     ts_type = escape(str(row.get("TimeSeriesType", "")))
     thumb = str(row.get("Thumbnail.URL", ""))
     browser_link = _browser_url(str(row.get("Product", "")))
-    open_call = f'pysdp.open_raster("{cat_id}")'
-
-    # Unique ID for the action overlay toggle (avoids CSS class collisions
-    # in notebooks with multiple browse() outputs).
-    uid = f"sdp-{cat_id}"
+    open_call = f"pysdp.open_raster(&quot;{cat_id}&quot;)"
 
     return f"""\
-<div id="{uid}"
-     onclick="(function(){{
-         var a=document.getElementById('{uid}').querySelector('.sdp-actions');
-         a.style.display = a.style.display==='flex' ? 'none' : 'flex';
-     }})()"
-     style="
-        position: relative;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #1a1a2e;
-        cursor: pointer;
-        min-height: 160px;
-     "
->
+<div style="
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #1a1a2e;
+    min-height: 170px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+">
     <img src="{thumb}"
          alt="{cat_id}"
          loading="lazy"
@@ -83,74 +73,57 @@ def _card_html(row: pd.Series, width: int) -> str:
             min-height: 140px;
             object-fit: cover;
          "
-         onerror="this.style.display='none'"
     >
-    <!-- Product info overlay (always visible) -->
+    <a href="{browser_link}"
+       target="_blank"
+       rel="noopener"
+       title="Open in SDP Browser"
+       style="
+          position: absolute;
+          top: 6px; right: 6px;
+          background: rgba(0,0,0,0.6);
+          color: white;
+          text-decoration: none;
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 600;
+       "
+    >SDP Browser &nearr;</a>
     <div style="
         position: absolute;
         bottom: 0; left: 0; right: 0;
-        background: linear-gradient(transparent 0%, rgba(0,0,0,0.85) 60%);
-        padding: 28px 10px 8px 10px;
+        background: linear-gradient(transparent 0%, rgba(0,0,0,0.88) 55%);
+        padding: 30px 10px 8px 10px;
         color: white;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     ">
-        <div style="font-size: 11px; opacity: 0.7; letter-spacing: 0.5px;">
+        <div style="font-size: 11px; opacity: 0.65; letter-spacing: 0.5px;">
             {cat_id}
         </div>
         <div style="
             font-weight: 600;
             font-size: 13px;
             line-height: 1.3;
-            margin: 2px 0;
+            margin: 2px 0 3px 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         ">{product}</div>
-        <div style="font-size: 11px; opacity: 0.75;">
+        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">
             {domain} &middot; {resolution} &middot; {ts_type}
         </div>
-    </div>
-    <!-- Action overlay (shown on click) -->
-    <div class="sdp-actions" style="
-        display: none;
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.88);
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        padding: 16px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    ">
-        <a href="{browser_link}"
-           target="_blank"
-           rel="noopener"
-           onclick="event.stopPropagation()"
-           style="
-              display: inline-block;
-              padding: 8px 16px;
-              background: #4CAF50;
-              color: white;
-              border-radius: 6px;
-              text-decoration: none;
-              font-size: 13px;
-              font-weight: 600;
-           "
-        >Open in SDP Browser &nearr;</a>
-        <code onclick="
-            event.stopPropagation();
-            if(navigator.clipboard){{navigator.clipboard.writeText('{open_call}');this.style.background='#3a5a3a';}}
-        " style="
-            background: rgba(255,255,255,0.12);
-            color: #ddd;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: copy;
+        <code style="
+            display: block;
+            background: rgba(255,255,255,0.1);
+            color: #ccc;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 10px;
             user-select: all;
-            transition: background 0.2s;
-        " title="Click to copy">{open_call}</code>
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        ">{open_call}</code>
     </div>
 </div>"""
 
@@ -163,10 +136,11 @@ def _grid_html(df: pd.DataFrame, *, columns: int, width: int, title: str | None)
         title_html = (
             f'<div style="font-family: -apple-system, BlinkMacSystemFont, '
             f"'Segoe UI', Roboto, sans-serif; font-size: 14px; "
-            f'color: #666; margin-bottom: 10px;">'
+            f'color: #888; margin-bottom: 10px;">'
             f"{escape(title)}</div>"
         )
     return f"""\
+<div>
 {title_html}
 <div style="
     display: grid;
@@ -175,19 +149,27 @@ def _grid_html(df: pd.DataFrame, *, columns: int, width: int, title: str | None)
     max-width: {columns * (width + 20)}px;
 ">
 {cards}
+</div>
 </div>"""
 
 
 class CatalogBrowser:
     """A displayable grid of SDP product thumbnails.
 
-    In Jupyter, this renders as an interactive HTML grid via
-    ``_repr_html_``. Outside notebooks, ``str(browser)`` returns the
-    raw HTML string.
+    In Jupyter, this renders as an interactive HTML grid. The rendering
+    uses ``IPython.display.HTML`` when available (via ``_ipython_display_``),
+    which is more reliable than ``_repr_html_`` across JupyterLab versions.
+    Outside notebooks, ``str(browser)`` returns the raw HTML string.
     """
 
     def __init__(self, html: str) -> None:
         self._html = html
+
+    def _ipython_display_(self, **kwargs: object) -> None:
+        """Jupyter display protocol — uses IPython.display.HTML for reliable rendering."""
+        from IPython.display import HTML, display
+
+        display(HTML(self._html))  # type: ignore[no-untyped-call]
 
     def _repr_html_(self) -> str:
         return self._html
@@ -217,14 +199,12 @@ def browse(
     each matching product as a card with its thumbnail image + overlaid
     metadata (CatalogID, product name, domain, resolution, time-series type).
 
-    **Clicking a card** reveals an action overlay with:
+    Each card includes:
 
-    - **Open in SDP Browser** — opens the product in the
-      `SDP Browser <https://sdpbrowser.org/>`_ web map viewer (new tab).
-    - **Code snippet** — a copyable ``pysdp.open_raster("...")`` call
-      (click to copy to clipboard).
-
-    Click again to dismiss the overlay.
+    - **"SDP Browser ↗"** link (top-right) — opens the product in the
+      `SDP Browser <https://sdpbrowser.org/>`_ web map viewer.
+    - **Code snippet** (bottom) — a selectable ``pysdp.open_raster("...")``
+      call for quick copy-paste into a notebook cell.
 
     Parameters
     ----------
@@ -245,8 +225,8 @@ def browse(
     -------
     CatalogBrowser
         An object that renders as an HTML grid in Jupyter (via
-        ``_repr_html_``). Outside notebooks, cast to ``str`` for the raw
-        HTML.
+        ``_ipython_display_`` / ``_repr_html_``). Outside notebooks,
+        cast to ``str`` for the raw HTML.
 
     Examples
     --------
