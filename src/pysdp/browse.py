@@ -1,12 +1,10 @@
 """Visual catalog browser for Jupyter notebooks.
 
-Renders an HTML grid of SDP product thumbnails with overlaid metadata,
-making catalog discovery visual rather than tabular. Works in JupyterLab,
-classic Notebook, and VS Code notebooks.
-
-Each card shows the product thumbnail with a persistent "Open in SDP
-Browser" link and a copyable ``open_raster()`` code snippet — no
-JavaScript required (JupyterLab's sanitizer strips JS from HTML output).
+Renders an HTML grid of SDP product thumbnails with metadata, SDP Browser
+links, and copyable ``open_raster()`` snippets. Uses only HTML attributes
+(no inline ``style``, no JavaScript, no iframes) for maximum compatibility
+across JupyterLab, Positron, VS Code, and classic Notebook — all of which
+have different HTML sanitizer policies.
 """
 
 from __future__ import annotations
@@ -45,169 +43,62 @@ def _browser_url(product_name: str) -> str:
 
 
 def _card_html(row: pd.Series, width: int) -> str:
-    """Render one product card as pure HTML (no JavaScript)."""
+    """Render one product card using only HTML attributes (no inline style)."""
     cat_id = escape(str(row.get("CatalogID", "")))
     product = escape(str(row.get("Product", "")))
     domain = escape(str(row.get("Domain", "")))
     resolution = escape(str(row.get("Resolution", "")))
     ts_type = escape(str(row.get("TimeSeriesType", "")))
-    thumb = str(row.get("Thumbnail.URL", ""))
-    browser_link = _browser_url(str(row.get("Product", "")))
-    open_call = f"pysdp.open_raster(&quot;{cat_id}&quot;)"
+    thumb = escape(str(row.get("Thumbnail.URL", "")))
+    browser_link = escape(_browser_url(str(row.get("Product", ""))))
+    open_call = f'pysdp.open_raster("{cat_id}")'
 
-    return f"""\
-<div style="
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #1a1a2e;
-    min-height: 170px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-">
-    <img src="{thumb}"
-         alt="{cat_id}"
-         loading="lazy"
-         style="
-            width: 100%;
-            display: block;
-            min-height: 140px;
-            object-fit: cover;
-         "
-    >
-    <a href="{browser_link}"
-       target="_blank"
-       rel="noopener"
-       title="Open in SDP Browser"
-       style="
-          position: absolute;
-          top: 6px; right: 6px;
-          background: rgba(0,0,0,0.6);
-          color: white;
-          text-decoration: none;
-          padding: 3px 8px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 600;
-       "
-    >SDP Browser &nearr;</a>
-    <div style="
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        background: linear-gradient(transparent 0%, rgba(0,0,0,0.88) 55%);
-        padding: 30px 10px 8px 10px;
-        color: white;
-    ">
-        <div style="font-size: 11px; opacity: 0.65; letter-spacing: 0.5px;">
-            {cat_id}
-        </div>
-        <div style="
-            font-weight: 600;
-            font-size: 13px;
-            line-height: 1.3;
-            margin: 2px 0 3px 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        ">{product}</div>
-        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">
-            {domain} &middot; {resolution} &middot; {ts_type}
-        </div>
-        <code style="
-            display: block;
-            background: rgba(255,255,255,0.1);
-            color: #ccc;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            user-select: all;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        ">{open_call}</code>
-    </div>
-</div>"""
+    return (
+        f'<td width="{width}" valign="top" bgcolor="#f8f8f8">'
+        f'<img src="{thumb}" width="{width - 10}" alt="{cat_id}" loading="lazy"><br>'
+        f"<b>{cat_id}</b><br>"
+        f"{product}<br>"
+        f"<small>{domain} &middot; {resolution} &middot; {ts_type}</small><br>"
+        f'<a href="{browser_link}" target="_blank">SDP Browser &nearr;</a><br>'
+        f"<code>{escape(open_call)}</code>"
+        f"</td>"
+    )
 
 
 def _grid_html(df: pd.DataFrame, *, columns: int, width: int, title: str | None) -> str:
-    """Render the full grid as an HTML table.
-
-    Uses ``<table>`` rather than CSS grid because JupyterLab's HTML
-    sanitizer strips or ignores ``display: grid`` in output cells.
-    Tables render reliably in every notebook environment.
-    """
+    """Render the full grid as an HTML table using only HTML attributes."""
     card_list = [_card_html(row, width) for _, row in df.iterrows()]
     title_html = ""
     if title:
-        title_html = (
-            f'<div style="font-family: -apple-system, BlinkMacSystemFont, '
-            f"'Segoe UI', Roboto, sans-serif; font-size: 14px; "
-            f'color: #888; margin-bottom: 10px;">'
-            f"{escape(title)}</div>"
-        )
+        title_html = f"<p><b>{escape(title)}</b></p>"
 
     rows_html: list[str] = []
     for i in range(0, len(card_list), columns):
         chunk = card_list[i : i + columns]
-        cells = "".join(
-            f'<td style="width:{width}px; vertical-align:top; padding:5px;">{card}</td>'
-            for card in chunk
-        )
-        # Pad incomplete final row with empty cells
+        cells = "".join(chunk)
         for _ in range(columns - len(chunk)):
-            cells += f'<td style="width:{width}px;"></td>'
+            cells += f'<td width="{width}"></td>'
         rows_html.append(f"<tr>{cells}</tr>")
 
-    return f"""\
-<div>
-{title_html}
-<table style="border-collapse: separate; border-spacing: 0;">
-{"".join(rows_html)}
-</table>
-</div>"""
+    return f'{title_html}<table cellpadding="8" cellspacing="6">{"".join(rows_html)}</table>'
 
 
 class CatalogBrowser:
     """A displayable grid of SDP product thumbnails.
 
-    In Jupyter, this renders inside an ``<iframe srcdoc="...">`` so that
-    JupyterLab's HTML sanitizer (which strips inline styles, ``position``,
-    ``background``, etc.) doesn't interfere with the card layout and
-    thumbnail rendering. This is the same pattern ``folium`` uses to
-    display interactive maps in notebooks.
+    Uses only HTML attributes (``width``, ``bgcolor``, ``cellpadding``,
+    etc.) — no inline ``style``, no JavaScript, no iframes. This renders
+    correctly in JupyterLab, Positron, VS Code notebooks, and classic
+    Notebook despite their differing HTML sanitizer policies.
 
     Outside notebooks, ``str(browser)`` returns the raw HTML string.
     """
 
-    def __init__(self, html: str, *, n_rows: int) -> None:
+    def __init__(self, html: str) -> None:
         self._html = html
-        self._n_rows = n_rows
 
     def _repr_html_(self) -> str:
-        """Render via a data-URI iframe to bypass both JupyterLab's HTML
-        sanitizer and Positron's Trusted Types CSP.
-
-        ``srcdoc`` is blocked by Trusted Types (it's an HTML-injection sink).
-        A ``data:text/html;base64,...`` URI in ``src`` is a navigation, not
-        an HTML assignment, so it isn't subject to the same restriction.
-        """
-        import base64
-
-        page = (
-            "<!DOCTYPE html>"
-            '<html><head><meta charset="utf-8"></head>'
-            f'<body style="margin:0; padding:10px; background:transparent; '
-            f"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', "
-            f'Roboto, sans-serif;">'
-            f"{self._html}"
-            "</body></html>"
-        )
-        b64 = base64.b64encode(page.encode("utf-8")).decode("ascii")
-        height = self._n_rows * 210 + 40
-        return (
-            f'<iframe src="data:text/html;base64,{b64}" '
-            f'style="width:100%; height:{height}px; border:none;" '
-            f'loading="lazy"></iframe>'
-        )
+        return self._html
 
     def __str__(self) -> str:
         return self._html
@@ -231,15 +122,8 @@ def browse(
     """Visual catalog browser — renders a thumbnail grid in Jupyter notebooks.
 
     Accepts the same filter arguments as :func:`get_catalog` and displays
-    each matching product as a card with its thumbnail image + overlaid
-    metadata (CatalogID, product name, domain, resolution, time-series type).
-
-    Each card includes:
-
-    - **"SDP Browser ↗"** link (top-right) — opens the product in the
-      `SDP Browser <https://sdpbrowser.org/>`_ web map viewer.
-    - **Code snippet** (bottom) — a selectable ``pysdp.open_raster("...")``
-      call for quick copy-paste into a notebook cell.
+    each matching product as a card with its thumbnail image, metadata,
+    an SDP Browser link, and a copyable ``open_raster()`` snippet.
 
     Parameters
     ----------
@@ -248,20 +132,18 @@ def browse(
     columns : int, default 4
         Number of columns in the grid.
     width : int, default 220
-        Minimum width of each card in pixels.
+        Width of each card in pixels.
     source : {"packaged", "live"}, default "packaged"
-        Catalog source. ``"stac"`` is not supported here (thumbnails are
-        derived from the CSV catalog's ``Data.URL`` column).
+        Catalog source. ``"stac"`` is not supported here.
     max_products : int or None, default None
-        Cap the number of products shown (useful for large result sets).
-        ``None`` shows all matches.
+        Cap the number of products shown. ``None`` shows all matches.
 
     Returns
     -------
     CatalogBrowser
         An object that renders as an HTML grid in Jupyter (via
-        ``_ipython_display_`` / ``_repr_html_``). Outside notebooks,
-        cast to ``str`` for the raw HTML.
+        ``_repr_html_``). Outside notebooks, cast to ``str`` for the raw
+        HTML.
 
     Examples
     --------
@@ -270,7 +152,7 @@ def browse(
     >>> import pysdp
     >>> pysdp.browse(domains=["UG"], types=["Vegetation"])  # doctest: +SKIP
 
-    Show all topo products across every domain in a 3-column grid:
+    Show all topo products in a 3-column grid:
 
     >>> pysdp.browse(types=["Topo"], columns=3)  # doctest: +SKIP
 
@@ -280,8 +162,6 @@ def browse(
     """
     import pandas as pd
 
-    # browse() only supports CSV-backed sources (not "stac"), so the return
-    # is always a DataFrame. Cast to narrow the union type for mypy.
     df = cast(
         pd.DataFrame,
         get_catalog(
@@ -307,8 +187,7 @@ def browse(
         title += f" — {', '.join(filters)}"
 
     html = _grid_html(df, columns=columns, width=width, title=title)
-    n_rows = (len(df) + columns - 1) // columns  # ceiling division
-    return CatalogBrowser(html, n_rows=n_rows)
+    return CatalogBrowser(html)
 
 
 __all__ = ["browse"]

@@ -33,11 +33,11 @@ class TestBrowse:
         result = browse(domains=["UG"], types=["Vegetation"])
         assert isinstance(result, CatalogBrowser)
 
-    def test_repr_html_is_data_uri_iframe(self) -> None:
+    def test_repr_html_is_table(self) -> None:
         result = browse(domains=["UG"], types=["Vegetation"])
-        iframe = result._repr_html_()
-        assert "<iframe" in iframe
-        assert "data:text/html;base64," in iframe
+        html = result._repr_html_()
+        assert "<table" in html
+        assert "<img" in html
 
     def test_raw_html_contains_img_tags(self) -> None:
         result = browse(domains=["UG"], types=["Vegetation"])
