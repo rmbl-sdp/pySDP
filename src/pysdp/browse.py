@@ -35,11 +35,9 @@ def _product_to_slug(product_name: str) -> str:
     return slug.strip("-")
 
 
-def _browser_url(product_name: str) -> str:
+def _browser_url(catalog_id: str) -> str:
     """Build an SDP Browser URL that opens this product as a map layer."""
-    slug = _product_to_slug(product_name)
-    layer_param = quote(f"id={slug}", safe="")
-    return f"{SDP_BROWSER_BASE}#layers={layer_param}"
+    return f"{SDP_BROWSER_BASE}#add={quote(catalog_id, safe='')}"
 
 
 def _card_html(row: pd.Series, width: int) -> str:
@@ -50,7 +48,7 @@ def _card_html(row: pd.Series, width: int) -> str:
     resolution = escape(str(row.get("Resolution", "")))
     ts_type = escape(str(row.get("TimeSeriesType", "")))
     thumb = escape(str(row.get("Thumbnail.URL", "")))
-    browser_link = escape(_browser_url(str(row.get("Product", ""))))
+    browser_link = escape(_browser_url(str(row.get("CatalogID", ""))))
     open_call = f'pysdp.open_raster("{cat_id}")'
 
     return (

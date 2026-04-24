@@ -90,11 +90,7 @@ class TestSlugAndBrowserUrl:
         assert _product_to_slug("20th Percentile Canopy Height") == "20th-percentile-canopy-height"
         assert _product_to_slug("October 2017 NAIP NDVI") == "october-2017-naip-ndvi"
 
-    def test_browser_url_contains_slug(self) -> None:
-        url = _browser_url("Basic Landcover")
+    def test_browser_url_uses_catalog_id(self) -> None:
+        url = _browser_url("R3D018")
         assert "sdpbrowser.org" in url
-        assert "basic-landcover" in url
-
-    def test_browser_url_encodes_layer_param(self) -> None:
-        url = _browser_url("Basic Landcover")
-        assert "#layers=" in url
+        assert "#add=R3D018" in url
