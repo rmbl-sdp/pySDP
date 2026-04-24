@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pysdp
-from pysdp.browse import CatalogBrowser, _browser_url, _product_to_slug, browse
+from pysdp.browse import CatalogBrowser, _browser_url, browse
 
 
 class TestThumbnailUrl:
@@ -84,13 +84,12 @@ class TestBrowse:
         assert "pysdp.open_raster(" in html
 
 
-class TestSlugAndBrowserUrl:
-    def test_product_to_slug(self) -> None:
-        assert _product_to_slug("Basic Landcover") == "basic-landcover"
-        assert _product_to_slug("20th Percentile Canopy Height") == "20th-percentile-canopy-height"
-        assert _product_to_slug("October 2017 NAIP NDVI") == "october-2017-naip-ndvi"
-
+class TestBrowserUrl:
     def test_browser_url_uses_catalog_id(self) -> None:
         url = _browser_url("R3D018")
-        assert "sdpbrowser.org" in url
-        assert "#add=R3D018" in url
+        assert url == "https://sdpbrowser.org/#add=R3D018"
+
+    def test_browser_url_encodes_special_chars(self) -> None:
+        url = _browser_url("A B+C")
+        assert "sdpbrowser.org/#add=A" in url
+        assert "+" not in url.split("#add=")[1] or "%2B" in url

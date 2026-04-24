@@ -9,7 +9,6 @@ have different HTML sanitizer policies.
 
 from __future__ import annotations
 
-import re
 from html import escape
 from typing import TYPE_CHECKING, Literal, cast
 from urllib.parse import quote
@@ -23,16 +22,6 @@ if TYPE_CHECKING:
 
 
 SDP_BROWSER_BASE = "https://sdpbrowser.org/"
-
-
-def _product_to_slug(product_name: str) -> str:
-    """Convert a catalog Product name to a URL-safe slug.
-
-    Mirrors ``stac-gen/lib/slugs.py::product_to_slug``.
-    """
-    slug = product_name.lower().strip()
-    slug = re.sub(r"[^a-z0-9]+", "-", slug)
-    return slug.strip("-")
 
 
 def _browser_url(catalog_id: str) -> str:
