@@ -183,10 +183,15 @@ class CatalogBrowser:
         self._n_rows = n_rows
 
     def _repr_html_(self) -> str:
-        """Render via an iframe to bypass JupyterLab's HTML sanitizer."""
-        import html as html_mod
+        """Render via a data-URI iframe to bypass both JupyterLab's HTML
+        sanitizer and Positron's Trusted Types CSP.
 
-        # Full standalone HTML page inside the iframe.
+        ``srcdoc`` is blocked by Trusted Types (it's an HTML-injection sink).
+        A ``data:text/html;base64,...`` URI in ``src`` is a navigation, not
+        an HTML assignment, so it isn't subject to the same restriction.
+        """
+        import base64
+
         page = (
             "<!DOCTYPE html>"
             '<html><head><meta charset="utf-8"></head>'
@@ -196,11 +201,10 @@ class CatalogBrowser:
             f"{self._html}"
             "</body></html>"
         )
-        escaped = html_mod.escape(page)
-        # Estimate height: ~210px per row of cards + 40px for title.
+        b64 = base64.b64encode(page.encode("utf-8")).decode("ascii")
         height = self._n_rows * 210 + 40
         return (
-            f'<iframe srcdoc="{escaped}" '
+            f'<iframe src="data:text/html;base64,{b64}" '
             f'style="width:100%; height:{height}px; border:none;" '
             f'loading="lazy"></iframe>'
         )
