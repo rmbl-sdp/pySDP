@@ -1,4 +1,4 @@
-# pySDP
+# pySDP <img src="docs/assets/images/logo.png" align="right" height="139" />
 
 [![PyPI](https://img.shields.io/pypi/v/pysdp.svg)](https://pypi.org/project/pysdp/)
 [![Python versions](https://img.shields.io/pypi/pyversions/pysdp.svg)](https://pypi.org/project/pysdp/)

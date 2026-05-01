@@ -1,4 +1,4 @@
-# pySDP
+# pySDP <img src="assets/images/logo.png" align="right" height="139" />
 
 Native Python interface for the [RMBL Spatial Data Platform](https://www.rmbl.org/scientists/resources/spatial-data-platform/) — curated, high-resolution geospatial datasets covering Western Colorado (USA) around [Rocky Mountain Biological Laboratory](https://rmbl.org).
 
