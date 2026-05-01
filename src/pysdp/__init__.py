@@ -16,6 +16,7 @@ except ImportError:
 from pysdp.browse import browse
 from pysdp.catalog import get_catalog, get_metadata
 from pysdp.constants import DOMAINS, RELEASES, SDP_CRS, TIMESERIES_TYPES, TYPES
+from pysdp.dates import get_dates
 from pysdp.download import download
 from pysdp.extract import extract_points, extract_polygons
 from pysdp.raster import open_raster, open_stack
@@ -32,6 +33,7 @@ __all__ = [
     "extract_points",
     "extract_polygons",
     "get_catalog",
+    "get_dates",
     "get_metadata",
     "open_raster",
     "open_stack",

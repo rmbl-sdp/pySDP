@@ -37,6 +37,7 @@ RELEASES: Final[tuple[str, ...]] = (
     "Release3",
     "Release4",
     "Release5",
+    "Release6",
 )
 """Dataset release cohorts."""
 
@@ -45,6 +46,7 @@ TIMESERIES_TYPES: Final[tuple[str, ...]] = (
     "Yearly",
     "Seasonal",
     "Monthly",
+    "Weekly",
     "Daily",
 )
 """Time-series structure types for SDP datasets."""

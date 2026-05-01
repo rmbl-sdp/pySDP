@@ -47,6 +47,7 @@ class TimeSlices(NamedTuple):
 
     paths: list[str]
     names: list[str]
+    is_imagery: bool = False
 
 
 def _emit(msg: str, verbose: bool) -> None:
@@ -247,12 +248,94 @@ def resolve_daily(
     return TimeSlices(paths=paths, names=names)
 
 
+def resolve_weekly(
+    cat_line: Mapping[str, Any],
+    dates: Sequence[datetime.date | str] | None,
+    date_start: datetime.date | str | None,
+    date_end: datetime.date | str | None,
+    *,
+    verbose: bool = True,
+) -> TimeSlices:
+    """Resolve an irregular (Weekly) time-series from a baked manifest.
+
+    Behavior-preserving port of rSDP's ``.resolve_weekly()``. Loads available
+    dates from the packaged manifest JSON, filters to the requested subset,
+    and builds URLs via template substitution with ``{year}``, ``{month}``,
+    ``{calendarday}`` placeholders.
+
+    Sets ``is_imagery=True`` when the product's ``Type`` column is
+    ``"Imagery"`` — these products have varying spatial extents per date and
+    cannot be stacked into a single xarray Dataset.
+    """
+    import datetime as dt
+    import warnings
+
+    from pysdp._catalog_data import load_manifests
+
+    template = VSICURL_PREFIX + str(cat_line["Data.URL"])
+    cat_id = str(cat_line["CatalogID"])
+
+    manifests = load_manifests()
+    all_dates = manifests.get(cat_id, [])
+    if not all_dates:
+        raise ValueError(
+            f"No date manifest found for {cat_id!r}. Run "
+            f"`scripts/update_catalog.py` to regenerate manifests, or use "
+            f"`get_dates({cat_id!r}, source='stac')` to query live."
+        )
+
+    if dates is not None:
+        requested = [d if isinstance(d, dt.date) else dt.date.fromisoformat(str(d)) for d in dates]
+        all_set = set(all_dates)
+        missing = [d for d in requested if d not in all_set]
+        if missing:
+            warnings.warn(
+                f"No data for {len(missing)} of {len(requested)} requested dates. "
+                f"Available range: {min(all_dates)} to {max(all_dates)}.",
+                UserWarning,
+                stacklevel=3,
+            )
+        selected = sorted(d for d in requested if d in all_set)
+        if not selected:
+            raise ValueError(
+                f"None of the requested dates are available for {cat_id!r}. "
+                f"Available range: {min(all_dates)} to {max(all_dates)}."
+            )
+    elif date_start is not None and date_end is not None:
+        start = (
+            date_start
+            if isinstance(date_start, dt.date)
+            else dt.date.fromisoformat(str(date_start))
+        )
+        end = date_end if isinstance(date_end, dt.date) else dt.date.fromisoformat(str(date_end))
+        selected = [d for d in all_dates if start <= d <= end]
+        if not selected:
+            raise ValueError(
+                f"No data available between {start} and {end} for {cat_id!r}. "
+                f"Available range: {min(all_dates)} to {max(all_dates)}."
+            )
+    else:
+        selected = all_dates
+
+    years_v = [d.strftime("%Y") for d in selected]
+    months_v = [d.strftime("%m") for d in selected]
+    cdays_v = [d.strftime("%d") for d in selected]
+    paths = substitute_template(template, year=years_v, month=months_v, calendarday=cdays_v)
+    names = [d.isoformat() for d in selected]
+
+    _emit(f"Returning {len(selected)} dates for weekly dataset.", verbose)
+
+    is_imagery = str(cat_line.get("Type", "")) == "Imagery"
+    return TimeSlices(paths=paths, names=names, is_imagery=is_imagery)
+
+
 def resolve_time_slices(
     cat_line: Mapping[str, Any],
     years: Sequence[int] | None,
     months_pad: Sequence[str] | None,
     date_start: datetime.date | str | None,
     date_end: datetime.date | str | None,
+    dates: Sequence[datetime.date | str] | None = None,
     *,
     verbose: bool = True,
 ) -> TimeSlices:
@@ -269,4 +352,6 @@ def resolve_time_slices(
         return resolve_monthly(cat_line, years, months_pad, date_start, date_end, verbose=verbose)
     if ts_type == "Daily":
         return resolve_daily(cat_line, date_start, date_end, verbose=verbose)
+    if ts_type == "Weekly":
+        return resolve_weekly(cat_line, dates, date_start, date_end, verbose=verbose)
     raise ValueError(f"Unsupported TimeSeriesType: {ts_type!r}")

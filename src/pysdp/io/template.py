@@ -27,19 +27,23 @@ def substitute_template(
     year: str | int | Iterable[str | int] | None = None,
     month: str | int | Iterable[str | int] | None = None,
     day: str | int | Iterable[str | int] | None = None,
+    calendarday: str | int | Iterable[str | int] | None = None,
 ) -> list[str]:
-    """Substitute ``{year}``, ``{month}``, ``{day}`` placeholders in a URL template.
+    """Substitute ``{year}``, ``{month}``, ``{day}``, ``{calendarday}`` placeholders.
 
     Each placeholder argument may be ``None`` (leave placeholder untouched), a
     scalar string/int (recycled to length N), or an iterable of length 1 or N,
     where N is the longest of the provided arguments. Mismatched-length
     vectors raise ``ValueError``.
 
+    ``{day}`` is day-of-year (DOY, 3-digit, used by Daily products).
+    ``{calendarday}`` is calendar day-of-month (2-digit, used by Weekly
+    drone imagery products). Both can coexist in a template.
+
     Parameters
     ----------
     template
-        A string URL or path containing zero or more of ``{year}``,
-        ``{month}``, ``{day}``.
+        A string URL or path containing zero or more placeholders.
 
     Returns
     -------
@@ -50,8 +54,9 @@ def substitute_template(
     year_v = _as_str_list(year)
     month_v = _as_str_list(month)
     day_v = _as_str_list(day)
+    cday_v = _as_str_list(calendarday)
 
-    provided = [v for v in (year_v, month_v, day_v) if v is not None]
+    provided = [v for v in (year_v, month_v, day_v, cday_v) if v is not None]
     if not provided:
         return [template]
 
@@ -72,6 +77,7 @@ def substitute_template(
     year_b = _broadcast(year_v)
     month_b = _broadcast(month_v)
     day_b = _broadcast(day_v)
+    cday_b = _broadcast(cday_v)
 
     out: list[str] = []
     for i in range(n):
@@ -82,5 +88,7 @@ def substitute_template(
             s = s.replace("{month}", month_b[i])
         if day_b is not None:
             s = s.replace("{day}", day_b[i])
+        if cday_b is not None:
+            s = s.replace("{calendarday}", cday_b[i])
         out.append(s)
     return out

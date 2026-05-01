@@ -44,7 +44,7 @@ def test_constants_values() -> None:
     assert "UG" in DOMAINS and "GMUG" in DOMAINS
     assert "Vegetation" in TYPES
     assert "Release5" in RELEASES
-    assert set(TIMESERIES_TYPES) == {"Single", "Yearly", "Seasonal", "Monthly", "Daily"}
+    assert set(TIMESERIES_TYPES) == {"Single", "Yearly", "Seasonal", "Monthly", "Weekly", "Daily"}
 
 
 # All public-API functions are implemented as of Phase 5:

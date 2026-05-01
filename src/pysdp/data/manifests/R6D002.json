@@ -1,0 +1,277 @@
+[
+  {
+    "start": "2022-01-26",
+    "end": "2022-01-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_01_26.tif"
+  },
+  {
+    "start": "2022-02-14",
+    "end": "2022-02-14",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_02_14.tif"
+  },
+  {
+    "start": "2022-03-01",
+    "end": "2022-03-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_03_01.tif"
+  },
+  {
+    "start": "2022-03-26",
+    "end": "2022-03-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_03_26.tif"
+  },
+  {
+    "start": "2022-04-08",
+    "end": "2022-04-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_04_08.tif"
+  },
+  {
+    "start": "2022-04-21",
+    "end": "2022-04-21",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_04_21.tif"
+  },
+  {
+    "start": "2022-04-30",
+    "end": "2022-04-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_04_30.tif"
+  },
+  {
+    "start": "2022-05-10",
+    "end": "2022-05-10",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_05_10.tif"
+  },
+  {
+    "start": "2022-05-17",
+    "end": "2022-05-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_05_17.tif"
+  },
+  {
+    "start": "2022-05-25",
+    "end": "2022-05-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_05_25.tif"
+  },
+  {
+    "start": "2022-06-15",
+    "end": "2022-06-15",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_06_15.tif"
+  },
+  {
+    "start": "2022-07-09",
+    "end": "2022-07-09",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_07_09.tif"
+  },
+  {
+    "start": "2022-07-28",
+    "end": "2022-07-28",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_07_28.tif"
+  },
+  {
+    "start": "2022-09-19",
+    "end": "2022-09-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_09_19.tif"
+  },
+  {
+    "start": "2022-10-17",
+    "end": "2022-10-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2022/P1_rgb_GothicTownsite_2022_10_17.tif"
+  },
+  {
+    "start": "2023-02-02",
+    "end": "2023-02-02",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_02_02.tif"
+  },
+  {
+    "start": "2023-03-07",
+    "end": "2023-03-07",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_03_07.tif"
+  },
+  {
+    "start": "2023-04-07",
+    "end": "2023-04-07",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_04_07.tif"
+  },
+  {
+    "start": "2023-05-09",
+    "end": "2023-05-09",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_05_09.tif"
+  },
+  {
+    "start": "2023-05-16",
+    "end": "2023-05-16",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_05_16.tif"
+  },
+  {
+    "start": "2023-05-23",
+    "end": "2023-05-23",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_05_23.tif"
+  },
+  {
+    "start": "2023-06-06",
+    "end": "2023-06-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_06_06.tif"
+  },
+  {
+    "start": "2023-06-26",
+    "end": "2023-06-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_06_26.tif"
+  },
+  {
+    "start": "2023-07-11",
+    "end": "2023-07-11",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_07_11.tif"
+  },
+  {
+    "start": "2023-07-25",
+    "end": "2023-07-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_07_25.tif"
+  },
+  {
+    "start": "2023-08-21",
+    "end": "2023-08-21",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_08_21.tif"
+  },
+  {
+    "start": "2023-09-13",
+    "end": "2023-09-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_09_13.tif"
+  },
+  {
+    "start": "2023-10-03",
+    "end": "2023-10-03",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_10_03.tif"
+  },
+  {
+    "start": "2023-10-25",
+    "end": "2023-10-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_10_25.tif"
+  },
+  {
+    "start": "2023-11-02",
+    "end": "2023-11-02",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_11_02.tif"
+  },
+  {
+    "start": "2023-11-15",
+    "end": "2023-11-15",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_11_15.tif"
+  },
+  {
+    "start": "2023-12-15",
+    "end": "2023-12-15",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2023/P1_rgb_GothicTownsite_2023_12_15.tif"
+  },
+  {
+    "start": "2024-02-29",
+    "end": "2024-02-29",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_02_29.tif"
+  },
+  {
+    "start": "2024-04-25",
+    "end": "2024-04-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_04_25.tif"
+  },
+  {
+    "start": "2024-05-02",
+    "end": "2024-05-02",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_05_02.tif"
+  },
+  {
+    "start": "2024-05-08",
+    "end": "2024-05-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_05_08.tif"
+  },
+  {
+    "start": "2024-05-17",
+    "end": "2024-05-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_05_17.tif"
+  },
+  {
+    "start": "2024-06-06",
+    "end": "2024-06-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_06_06.tif"
+  },
+  {
+    "start": "2024-07-03",
+    "end": "2024-07-03",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_07_03.tif"
+  },
+  {
+    "start": "2024-08-06",
+    "end": "2024-08-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_08_06.tif"
+  },
+  {
+    "start": "2024-09-13",
+    "end": "2024-09-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_09_13.tif"
+  },
+  {
+    "start": "2024-10-25",
+    "end": "2024-10-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_10_25.tif"
+  },
+  {
+    "start": "2024-11-11",
+    "end": "2024-11-11",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2024/P1_rgb_GothicTownsite_2024_11_11.tif"
+  },
+  {
+    "start": "2025-04-16",
+    "end": "2025-04-16",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_04_16.tif"
+  },
+  {
+    "start": "2025-04-24",
+    "end": "2025-04-24",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_04_24.tif"
+  },
+  {
+    "start": "2025-04-30",
+    "end": "2025-04-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_04_30.tif"
+  },
+  {
+    "start": "2025-05-08",
+    "end": "2025-05-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_05_08.tif"
+  },
+  {
+    "start": "2025-05-12",
+    "end": "2025-05-12",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_05_12.tif"
+  },
+  {
+    "start": "2025-05-21",
+    "end": "2025-05-21",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_05_21.tif"
+  },
+  {
+    "start": "2025-06-04",
+    "end": "2025-06-04",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_06_04.tif"
+  },
+  {
+    "start": "2025-06-13",
+    "end": "2025-06-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_06_13.tif"
+  },
+  {
+    "start": "2025-06-19",
+    "end": "2025-06-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_06_19.tif"
+  },
+  {
+    "start": "2025-07-11",
+    "end": "2025-07-11",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_07_11.tif"
+  },
+  {
+    "start": "2025-09-01",
+    "end": "2025-09-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_09_01.tif"
+  },
+  {
+    "start": "2025-10-30",
+    "end": "2025-10-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/imagery/rmbl_dronedata/GT_rgb_weekly_01cm_v1/2025/P1_rgb_GothicTownsite_2025_10_30.tif"
+  }
+]

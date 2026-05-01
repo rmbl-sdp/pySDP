@@ -120,4 +120,9 @@ def validate_args_vs_type(
         raise ValueError(
             "For Daily datasets, use `date_start`/`date_end` instead of `years` or `months`."
         )
+    elif ts_type == "Weekly" and (has_years or has_months):
+        raise ValueError(
+            "For Weekly datasets, use `date_start`/`date_end` or `dates` instead of "
+            "`years` or `months`."
+        )
     # Seasonal or unknown types fall through (no resolver yet).

@@ -214,6 +214,35 @@ def lookup_catalog_row(catalog_id: str) -> pd.Series:
     return matches.iloc[0]
 
 
+def load_manifests() -> dict[str, list[datetime.date]]:
+    """Load baked date manifests for irregular time-series products.
+
+    Each manifest is a JSON file in ``pysdp/data/manifests/{CatalogID}.json``
+    containing a list of ``{start, end, url}`` dicts (produced by stac-gen).
+    We extract the ``start`` dates as ``datetime.date`` objects.
+    """
+    pkg = importlib.resources.files("pysdp.data")
+    manifests_dir = pkg / "manifests"
+    result: dict[str, list[datetime.date]] = {}
+    try:
+        for entry in manifests_dir.iterdir():
+            if entry.name.endswith(".json"):
+                import json
+
+                cat_id = entry.name.removesuffix(".json")
+                with entry.open("rb") as fh:
+                    items = json.load(fh)
+                if isinstance(items, list) and items:
+                    result[cat_id] = sorted(
+                        datetime.date.fromisoformat(item["start"])
+                        for item in items
+                        if "start" in item
+                    )
+    except (FileNotFoundError, TypeError):
+        pass  # no manifests directory → empty dict
+    return result
+
+
 def load_live_catalog() -> pd.DataFrame:
     """Fetch the live catalog CSV from S3 (bypasses the packaged snapshot)."""
     import requests

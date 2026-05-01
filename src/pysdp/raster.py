@@ -37,12 +37,14 @@ if TYPE_CHECKING:
 
 
 _PLACEHOLDER_PATTERNS = {
-    # Match `_year_{year}`, `_month_{month}`, `_day_0{day}` (and variants
-    # with extra underscores or 0-prefix), which the SDP catalog uses as
-    # labeled placeholders in URL templates.
+    # Match `_year_{year}`, `_month_{month}`, `_day_0{day}`,
+    # `_calendarday_{calendarday}` (and variants with extra underscores
+    # or 0-prefix), which the SDP catalog uses as labeled placeholders
+    # in URL templates.
     "year": re.compile(r"_+year_+\{year\}"),
     "month": re.compile(r"_+month_+\{month\}"),
     "day": re.compile(r"_+day_+0?\{day\}"),
+    "calendarday": re.compile(r"_+\{calendarday\}"),
 }
 
 
@@ -61,7 +63,7 @@ def _canonical_variable_name(data_url: str, catalog_id: str) -> str:
     for pattern in _PLACEHOLDER_PATTERNS.values():
         name = pattern.sub("", name)
     # Any remaining bare placeholders (unlabeled templates).
-    for ph in ("year", "month", "day"):
+    for ph in ("year", "month", "day", "calendarday"):
         name = re.sub(rf"_?\{{{ph}\}}_?", "_", name)
     name = re.sub(r"_+", "_", name).strip("_")
     return name if name else catalog_id
@@ -205,12 +207,14 @@ def open_raster(
     months: Sequence[int] | None = None,
     date_start: str | datetime.date | None = None,
     date_end: str | datetime.date | None = None,
+    dates: Sequence[str | datetime.date] | None = None,
+    bands: Sequence[int] | None = None,
     chunks: dict[str, int] | Literal["auto"] | None = "auto",
     download: bool = False,
     download_path: str | os.PathLike[str] | None = None,
     overwrite: bool = False,
     verbose: bool = True,
-) -> xr.Dataset:
+) -> xr.Dataset | dict[str, xr.Dataset]:
     """Open an SDP raster as a lazy ``xarray.Dataset``.
 
     Reads cloud-optimized GeoTIFFs from S3 via GDAL's VSICURL, without
@@ -352,9 +356,44 @@ def open_raster(
             months_pad=months_pad,
             date_start=date_start,
             date_end=date_end,
+            dates=dates,
             verbose=verbose,
         )
-        return _build_dataset(slices, cat_line=cat_line, url=None, chunks=chunks)
+
+        # Irregular imagery: varying extents per date → dict of Datasets.
+        if slices.is_imagery:
+            result_dict: dict[str, xr.Dataset] = {}
+            for path, name in zip(slices.paths, slices.names, strict=True):
+                da = _open_one(path, chunks=chunks)
+                if bands is not None:
+                    da = da.isel(band=list(bands)) if "band" in da.dims else da
+                ds = da.to_dataset(
+                    name=_canonical_variable_name(
+                        str(cat_line["Data.URL"]), str(cat_line["CatalogID"])
+                    )
+                )
+                result_dict[name] = _apply_metadata(
+                    ds,
+                    var_name=str(next(iter(ds.data_vars))),
+                    scale_factor=float(cat_line.get("DataScaleFactor", 1)),
+                    offset=float(cat_line.get("DataOffset", 0)),
+                )
+            if verbose:
+                _emit_msg = (
+                    f"Returning a dict of {len(result_dict)} Datasets (one per "
+                    f"date). Irregular imagery has varying extents and cannot be "
+                    f"stacked into a single Dataset."
+                )
+                import sys
+
+                print(_emit_msg, file=sys.stderr)
+            return result_dict
+
+        ds = _build_dataset(slices, cat_line=cat_line, url=None, chunks=chunks)
+        if bands is not None and "band" in next(iter(ds.data_vars.values())).dims:
+            var_name = next(iter(ds.data_vars))
+            ds[var_name] = ds[var_name].isel(band=list(bands))
+        return ds
 
     # url= branch: single-layer only. Scale/offset are skipped (no catalog row).
     assert url is not None
@@ -442,7 +481,7 @@ def open_stack(
     if align != "exact":
         raise ValueError(f"Unknown align: {align!r}. Must be 'exact' or 'reproject'.")
 
-    datasets = [
+    results = [
         open_raster(
             cid,
             years=years,
@@ -454,6 +493,15 @@ def open_stack(
         )
         for cid in catalog_ids
     ]
+    # Imagery products return dict[str, Dataset]; can't stack those.
+    datasets: list[xr.Dataset] = []
+    for cid, r in zip(catalog_ids, results, strict=True):
+        if isinstance(r, dict):
+            raise TypeError(
+                f"open_stack cannot include imagery product {cid!r} (varying "
+                f"extents per date). Open it separately via open_raster()."
+            )
+        datasets.append(r)
     _verify_exact_alignment(datasets, catalog_ids=list(catalog_ids))
     return xr.merge(datasets, compat="equals", join="exact")
 

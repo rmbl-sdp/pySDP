@@ -368,6 +368,12 @@ def extract_points(
     extract_polygons : Summarize values over polygon geometries.
     open_raster : Load a raster to extract from.
     """
+    if isinstance(raster, dict):
+        raise TypeError(
+            "extract_points received a dict of Datasets (from irregular imagery "
+            "via open_raster). Extract from each Dataset individually:\n"
+            "  results = {date: pysdp.extract_points(ds, locations) for date, ds in raster.items()}"
+        )
     raster = _filter_by_time(
         raster,
         years=years,
