@@ -140,9 +140,9 @@ pysdp.get_catalog(include_deprecated=True).query("CatalogID == 'YOUR_ID'")[["Pro
 
 ## Performance envelope
 
-### What's a reasonable workload for pysdp 0.1?
+### What's a reasonable workload for pre-1.0 pysdp?
 
-The v0.1 release targets interactive and moderate-scale workflows — **tens to thousands** of points or polygons against SDP rasters. Specifically:
+Current releases target interactive and moderate-scale workflows — **tens to thousands** of points or polygons against SDP rasters. Specifically:
 
 - **Point extraction**: hundreds of points × full SDP rasters → seconds–minutes (with `method="nearest"` + local download).
 - **Polygon extraction**: hundreds of polygons × time-series → minutes.

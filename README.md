@@ -60,17 +60,21 @@ See the [user guides](https://rmbl-sdp.github.io/pySDP/guides/) for deeper walkt
 
 ## Public API
 
-Seven functions cover the whole surface:
-
 | Function | Purpose |
 |---|---|
 | `get_catalog()` | Discover SDP datasets (packaged snapshot, live, or STAC) |
 | `get_metadata()` | Per-dataset XML metadata as dict or lxml Element |
+| `get_dates()` | Available dates for a time-series product (regular or irregular) |
+| `browse()` | Visual thumbnail-grid catalog browser for Jupyter |
 | `open_raster()` | Lazy `xarray.Dataset` from an SDP cloud COG |
 | `open_stack()` | Multi-product lazy stack (shared grid) |
 | `extract_points()` | Sample values at point geometries |
 | `extract_polygons()` | Zonal summaries over polygon geometries |
 | `download()` | Bulk-fetch COGs to local disk |
+| `report_issue()` | Open a prefilled GitHub Issue Form for a data-quality issue |
+| `known_issues()` | List open data-quality issues (cached, tidy `DataFrame`) |
+
+`get_catalog()` and `browse()` accept `include_deprecated=True` to surface deprecated products (which carry a `NewVersionID` column pointing at the replacement) and `with_issue_counts=True` to attach the `OpenIssues` count per dataset.
 
 Full signatures and examples: <https://rmbl-sdp.github.io/pySDP/api/>.
 
@@ -82,16 +86,20 @@ pySDP is a direct port with the same catalog, same vocabulary, and feature parit
 | --- | --- |
 | `sdp_get_catalog()` | `pysdp.get_catalog()` |
 | `sdp_get_metadata()` | `pysdp.get_metadata()` |
+| `sdp_get_dates()` | `pysdp.get_dates()` |
+| `sdp_browse()` | `pysdp.browse()` |
 | `sdp_get_raster()` | `pysdp.open_raster()` / `pysdp.open_stack()` |
 | `sdp_extract_data(points)` | `pysdp.extract_points()` |
 | `sdp_extract_data(polygons)` | `pysdp.extract_polygons()` |
 | `download_data()` | `pysdp.download()` |
+| `sdp_report_issue()` | `pysdp.report_issue()` |
+| `sdp_known_issues()` | `pysdp.known_issues()` |
 | `SpatRaster` | `xarray.Dataset` |
 | `SpatVector` / `sf::sf` | `geopandas.GeoDataFrame` |
 
 ## Status & roadmap
 
-**v0.1 (current):** feature-complete port of rSDP v0.2. Catalog discovery, metadata, lazy raster access, point/polygon extraction, bulk download — all with tests and CI across Python 3.11 / 3.12 / 3.13 × Linux / macOS / Windows.
+**v0.6.0 (current):** tracks rSDP v0.6. Catalog discovery, lazy raster access, point/polygon extraction, bulk download, weekly drone imagery, irregular time-series (`get_dates()`), visual catalog browser (`browse()`), dataset version-control (deprecation + `NewVersionID`), and the data-products issue tracker (`report_issue()` / `known_issues()`). Tests and CI cover Python 3.11 / 3.12 / 3.13 × Linux / macOS / Windows.
 
 **Upcoming** (see [ROADMAP.md](./ROADMAP.md) for details):
 

@@ -124,6 +124,49 @@ pysdp.download(
 
 Returns a `pandas.DataFrame` status report with `[url, dest, success, status, size, error]` columns.
 
+### Browse the catalog visually
+
+```python
+# Renders a thumbnail grid in Jupyter; outside notebooks str(...) returns raw HTML
+pysdp.browse(domains=["UG"], types=["Vegetation"])
+
+# Show deprecated products (current default hides them); deprecated cards get
+# a tinted background and a "deprecated → NEWID" badge pointing at the successor.
+pysdp.browse(types=["Snow"], include_deprecated=True)
+
+# Surface open data-quality issues from rmbl-sdp/sdp-products as a per-card badge
+pysdp.browse(domains=["UG"], with_issue_counts=True)
+```
+
+### Discover available dates
+
+```python
+# Yearly / Monthly / Daily products: computed deterministically from MinDate/MaxDate
+pysdp.get_dates("R6D007")            # Yearly snow-persistence series
+
+# Weekly drone-imagery products: discovered from the baked manifest (offline)
+# or the live STAC catalog
+pysdp.get_dates("R6D001")            # ~111 weekly flights
+```
+
+### Report and discover data-quality issues
+
+Dataset issues live in [`rmbl-sdp/sdp-products`](https://github.com/rmbl-sdp/sdp-products), separate from the pysdp package repo. The CLI opens a prefilled Issue Form:
+
+```python
+pysdp.report_issue("R4D004")                          # opens browser to the form
+pysdp.report_issue("R3D009", type="metadata-error")   # pre-selects the issue type
+```
+
+Before reporting, check whether the problem is already known:
+
+```python
+issues = pysdp.known_issues("R4D004")     # one row per open issue, cached 1h
+issues[["number", "type", "severity", "status", "title"]]
+```
+
+Set `GITHUB_TOKEN` (or `GITHUB_PAT`) in your environment to bump the API rate limit from 60 to 5000 requests/hr. Pass `refresh=True` to bypass the cache. The cache lives under `$XDG_CACHE_HOME/pysdp/` (or `~/.cache/pysdp/`).
+
 ## Coming from rSDP?
 
 pySDP is a direct port of the [rSDP R package](https://github.com/rmbl-sdp/rSDP). The API mirrors rSDP closely, with Python-idiomatic adjustments:
@@ -132,10 +175,14 @@ pySDP is a direct port of the [rSDP R package](https://github.com/rmbl-sdp/rSDP)
 | -------------------------------------- | --------------------------------------------------- |
 | `sdp_get_catalog()`                    | `pysdp.get_catalog()`                               |
 | `sdp_get_metadata()`                   | `pysdp.get_metadata()`                              |
+| `sdp_get_dates()`                      | `pysdp.get_dates()`                                 |
+| `sdp_browse()`                         | `pysdp.browse()`                                    |
 | `sdp_get_raster()`                     | `pysdp.open_raster()` / `pysdp.open_stack()`        |
 | `sdp_extract_data(points)`             | `pysdp.extract_points()`                            |
 | `sdp_extract_data(polygons)`           | `pysdp.extract_polygons()`                          |
 | `download_data()`                      | `pysdp.download()`                                  |
+| `sdp_report_issue()`                   | `pysdp.report_issue()`                              |
+| `sdp_known_issues()`                   | `pysdp.known_issues()`                              |
 | `SpatRaster`                           | `xarray.Dataset`                                    |
 | `SpatVector` / `sf::sf`                | `geopandas.GeoDataFrame`                            |
 

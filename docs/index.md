@@ -13,7 +13,7 @@ pySDP gives you lazy, cloud-native access to cloud-optimized GeoTIFFs (COGs) hos
 
 ## Status
 
-Pre-alpha. v0.1.0 is the initial feature-complete release covering catalog discovery, lazy raster access, point/polygon extraction, and bulk download. See the [changelog](changelog.md) for details.
+v0.6.0 tracks rSDP v0.6: catalog discovery, lazy raster access, point/polygon extraction, bulk download, irregular time-series and weekly drone imagery (`get_dates()`), a visual thumbnail-grid catalog browser (`browse()`), dataset version-control (deprecation + `NewVersionID`), and the data-products issue tracker (`report_issue()` / `known_issues()`). See the [changelog](changelog.md) for the per-release breakdown.
 
 Longer-term work (JupyterHub / Dask Gateway integration, distributed extraction recipes, benchmark harness) is tracked in the [roadmap](https://github.com/rmbl-sdp/pySDP/blob/main/ROADMAP.md).
 
@@ -47,4 +47,4 @@ Head to [Getting started](getting-started.md) for install instructions and a dee
 
 ## Citation
 
-If pySDP supports your research, please cite the RMBL Spatial Data Platform. A formal citation for pySDP itself will be added at the 0.1.0 release.
+If pySDP supports your research, please cite the RMBL Spatial Data Platform. A formal citation for pySDP itself will be added at the 1.0 release.

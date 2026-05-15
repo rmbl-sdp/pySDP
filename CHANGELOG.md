@@ -7,6 +7,120 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-15
+
+### Added
+- **Data-products issue tracker** — ports rSDP v0.6's `sdp_issues.R`.
+  Dataset feedback lives in a dedicated GitHub repo
+  ([`rmbl-sdp/sdp-products`](https://github.com/rmbl-sdp/sdp-products)),
+  separate from the pysdp code repo.
+  - `pysdp.report_issue(catalog_id, type=None, open=True)` — opens the
+    prefilled GitHub Issue Form. Validates `catalog_id` and `type`;
+    warns on an unknown CatalogID but still builds the URL.
+  - `pysdp.known_issues(catalog_id=None, refresh=False)` — paginated
+    GitHub API fetch returning a tidy `DataFrame` of open issues
+    (columns: `CatalogID`, `number`, `title`, `type`, `severity`,
+    `status`, `created`, `updated`, `url`). On-disk JSON cache at
+    `$XDG_CACHE_HOME/pysdp/open_issues.json` (TTL 1 h) with
+    offline-graceful fallback to stale cache. Honors `GITHUB_TOKEN` /
+    `GITHUB_PAT` to bump the rate limit.
+  - `get_catalog(with_issue_counts=True)` attaches an `OpenIssues`
+    `Int64` column (zero-filled where no issues exist).
+  - `browse(with_issue_counts=True)` renders a `⚠ N open issue(s)`
+    badge linking to the filtered issues list.
+- 23 new tests in `tests/test_issues.py`.
+
+Issue-tracker infrastructure (Issue Forms, the STAC patch-in-place
+refresh script, the validation bot) lives in `rSDP/stac-gen/` and the
+upstream `sdp-products` repo; the generated STAC catalog is shared
+between rSDP and pySDP, so this release ports only the client-side
+helpers.
+
+## [0.5.0] - 2026-05-15
+
+### Added
+- **Dataset version-control** — ports rSDP v0.5. The catalog now
+  carries a `NewVersionID` column pointing deprecated products at
+  their replacements.
+  - `get_catalog(include_deprecated=False)` (new canonical kwarg) hides
+    deprecated rows by default; `True` includes them.
+  - `browse(include_deprecated=True)` renders deprecated cards with a
+    tinted background and a `deprecated → NEWID` badge.
+  - `open_raster()`, `get_metadata()`, and `get_dates()` emit a
+    `UserWarning` when called with a deprecated CatalogID, pointing at
+    the successor.
+  - Catalog loader hard-fails when `Data.URL` / `Metadata.URL` are
+    empty (rather than silently producing broken thumbnails or
+    `license="proprietary"` fallbacks downstream).
+  - Packaged catalog rotated to the 2026-05-15 snapshot.
+- 22 new tests in `tests/test_versioning.py`.
+
+### Changed
+- **Soft-deprecation** of `get_catalog(deprecated=...)` and
+  `browse(deprecated=...)`. The legacy `deprecated=` kwarg is still
+  accepted but emits `DeprecationWarning` and will be removed in a
+  future release. Use `include_deprecated=` instead (semantic shift:
+  `include_deprecated=True` returns BOTH current and deprecated rows;
+  to get deprecated-only, filter the result on the `Deprecated`
+  column).
+
+## [0.2.0] - 2026-05-01
+
+### Added
+- **Weekly drone imagery + irregular time-series** — ports rSDP v0.3.
+  - New `TimeSeriesType="Weekly"`. `R6D001` (RGB orthomosaics) and
+    `R6D002` (multispectral indices) are the first products to use it.
+    Bbox / resolution / nodata vary per date, so weekly imagery returns
+    `dict[str, xarray.Dataset]` (one entry per date) instead of a
+    single stacked Dataset.
+  - `open_raster(..., dates=[...])` for explicit date selection on
+    irregular products; also accepts `date_start` / `date_end`.
+  - `open_raster(..., bands=[...])` to subset bands of a multi-band
+    raster (lazy `isel(band=...)`).
+  - `pysdp.get_dates(catalog_id, source="auto"|"stac"|"manifest")` —
+    discovers available dates. Regular products
+    (Yearly / Monthly / Daily) compute dates deterministically from
+    `MinDate` / `MaxDate`; irregular products read from a baked
+    manifest (`pysdp/data/manifests/<CatalogID>.json`) or query the
+    live STAC catalog.
+  - `{calendarday}` template placeholder for products keyed by ordinal
+    day-of-year strings instead of zero-padded `{day}`.
+- Packaged catalog rotated to the 2026-04-29 snapshot (162 products).
+
+## [0.1.3] - 2026-04-24
+
+### Fixed
+- `browse()` renders reliably across Positron, JupyterLab, VS Code, and
+  classic Notebook. Replaced iframe / inline-CSS / JavaScript rendering
+  with plain HTML attributes (`width`, `bgcolor`, `cellpadding`) and a
+  `<table>` layout so every notebook host's HTML sanitizer policy
+  passes the same output.
+- Each `browse()` card now includes a thumbnail, product metadata, an
+  `SDP Browser` link using the simplified `#add=CatalogID` URL format,
+  and a copyable `pysdp.open_raster()` snippet.
+
+## [0.1.2] - 2026-04-23
+
+### Added
+- `browse()` cards gain `SDP Browser` links (open the web map viewer)
+  and a copyable `pysdp.open_raster()` snippet alongside each
+  thumbnail.
+
+## [0.1.1] - 2026-04-17
+
+### Added
+- `pysdp.browse(...)`: HTML-grid catalog browser for Jupyter notebooks,
+  with product thumbnails and overlaid metadata. Accepts the same
+  filters as `get_catalog()` plus layout controls (`columns`, `width`,
+  `max_products`).
+- `Thumbnail.URL` column added to `get_catalog()` output — derived from
+  `Data.URL` using the stac-gen thumbnail convention.
+
+## [0.1.0] - 2026-04-16
+
+First feature-complete release: port of rSDP v0.2 with idiomatic Python
+types. Tested on Python 3.11 / 3.12 / 3.13 × Linux / macOS / Windows.
+
 ### Added
 - **Phase 6b docs expansion** — visual assets in the User Guides (PNG
   plots + folium HTML maps generated by
