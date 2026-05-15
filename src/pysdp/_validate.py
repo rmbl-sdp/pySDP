@@ -9,7 +9,8 @@ TimeSeriesType?" checks have a single source of truth.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, TypedDict
+import warnings
+from typing import TYPE_CHECKING, Any, TypedDict
 
 if TYPE_CHECKING:
     import os
@@ -126,3 +127,28 @@ def validate_args_vs_type(
             "`years` or `months`."
         )
     # Seasonal or unknown types fall through (no resolver yet).
+
+
+def warn_if_deprecated(row: Any) -> None:
+    """Emit a UserWarning when a deprecated dataset is loaded.
+
+    Mirrors rSDP's `.warn_if_deprecated()` in `R/internal_validate.R`. The
+    `NewVersionID` value (when present and non-empty) points at the
+    replacement CatalogID. Accepts any ``.get(key)``-supporting row
+    (``dict``, ``pd.Series``, ``Mapping``).
+    """
+    import pandas as pd
+
+    if not bool(row.get("Deprecated", False)):
+        return
+    cat_id = row.get("CatalogID", "?")
+    new_id = row.get("NewVersionID")
+    if new_id is None or (isinstance(new_id, float) and pd.isna(new_id)) or pd.isna(new_id):
+        new_id_str = ""
+    else:
+        new_id_str = str(new_id).strip()
+    if new_id_str:
+        msg = f"CatalogID {cat_id!r} is deprecated; use {new_id_str!r} instead."
+    else:
+        msg = f"CatalogID {cat_id!r} is deprecated and has no recorded replacement."
+    warnings.warn(msg, UserWarning, stacklevel=3)

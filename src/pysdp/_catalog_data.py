@@ -118,6 +118,27 @@ def _parse_sdp_dates(series: pd.Series) -> pd.Series:
     return out
 
 
+# Catalog rows must carry these URL fields. Without them downstream code
+# silently falls back to broken defaults (missing thumbnails,
+# license="proprietary"); fail loudly here instead. Mirrors rSDP's
+# guardrail in `data-raw/SDP_catalog.R`.
+_REQUIRED_URL_FIELDS = ("Data.URL", "Metadata.URL")
+
+
+def _validate_required_url_fields(df: pd.DataFrame) -> None:
+    missing: dict[str, list[str]] = {}
+    for field in _REQUIRED_URL_FIELDS:
+        if field not in df.columns:
+            raise ValueError(f"Catalog is missing required column {field!r}.")
+        col = df[field].astype(str).str.strip()
+        bad_mask = df[field].isna() | (col == "") | (col.str.lower() == "nan")
+        if bad_mask.any():
+            missing[field] = df.loc[bad_mask, "CatalogID"].tolist()
+    if missing:
+        parts = [f"{f} (rows: {', '.join(ids)})" for f, ids in sorted(missing.items())]
+        raise ValueError("Catalog is missing required URL fields:\n  " + "\n  ".join(parts))
+
+
 def _read_catalog_csv(buffer: io.BytesIO) -> pd.DataFrame:
     import pandas as pd
 
@@ -134,6 +155,18 @@ def _read_catalog_csv(buffer: io.BytesIO) -> pd.DataFrame:
         bad = df.loc[df["Deprecated"].isna(), "CatalogID"].tolist()
         raise ValueError(f"Unparsable Deprecated values for CatalogIDs: {bad!r}")
     df["Deprecated"] = df["Deprecated"].astype(bool)
+
+    # `NewVersionID` is the replacement CatalogID for deprecated rows. Empty
+    # cells mean "no replacement"; normalize to pd.NA so callers can do
+    # `if pd.notna(row["NewVersionID"]):`. Tolerate older snapshots that
+    # pre-date the column.
+    if "NewVersionID" in df.columns:
+        df["NewVersionID"] = df["NewVersionID"].astype("string").str.strip()
+        df.loc[df["NewVersionID"].isna() | (df["NewVersionID"] == ""), "NewVersionID"] = pd.NA
+    else:
+        df["NewVersionID"] = pd.Series([pd.NA] * len(df), dtype="string")
+
+    _validate_required_url_fields(df)
     df["MinDate"] = _parse_sdp_dates(df["MinDate"])
     df["MaxDate"] = _parse_sdp_dates(df["MaxDate"])
     df["Thumbnail.URL"] = df.apply(_derive_thumbnail_url, axis=1)

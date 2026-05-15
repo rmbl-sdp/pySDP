@@ -8,7 +8,7 @@ from pysdp.browse import CatalogBrowser, _browser_url, browse
 
 class TestThumbnailUrl:
     def test_column_present_in_catalog(self) -> None:
-        df = pysdp.get_catalog(deprecated=None)
+        df = pysdp.get_catalog(include_deprecated=True)
         assert "Thumbnail.URL" in df.columns
 
     def test_single_product_url_ends_with_thumbnail_png(self) -> None:
@@ -23,7 +23,7 @@ class TestThumbnailUrl:
             assert url.endswith("_thumbnail.png"), url
 
     def test_all_urls_are_https(self) -> None:
-        df = pysdp.get_catalog(deprecated=None)
+        df = pysdp.get_catalog(include_deprecated=True)
         for url in df["Thumbnail.URL"]:
             assert url.startswith("https://"), url
 

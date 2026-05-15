@@ -12,6 +12,7 @@ import datetime
 from typing import TYPE_CHECKING, Literal
 
 from pysdp._catalog_data import load_manifests, lookup_catalog_row
+from pysdp._validate import warn_if_deprecated
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -55,6 +56,7 @@ def get_dates(
     import pandas as pd
 
     row = lookup_catalog_row(catalog_id)
+    warn_if_deprecated(row)
     ts_type = str(row["TimeSeriesType"])
 
     # Regular products: compute deterministically.

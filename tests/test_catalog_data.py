@@ -110,6 +110,7 @@ class TestLoadPackagedCatalog:
             "Domain",
             "Resolution",
             "Deprecated",
+            "NewVersionID",
             "MinDate",
             "MaxDate",
             "MinYear",

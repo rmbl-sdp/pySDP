@@ -113,8 +113,9 @@ pysdp.get_catalog(
     types: Sequence[str] | None = None,
     releases: Sequence[str] | None = None,
     timeseries_types: Sequence[str] | None = None,
-    deprecated: bool = False,
+    deprecated: bool | None = _UNSET,   # legacy alias, emits DeprecationWarning
     *,
+    include_deprecated: bool = False,
     source: Literal["packaged", "live", "stac"] = "packaged",
 ) -> pd.DataFrame | pystac.Catalog
 ```

@@ -129,7 +129,7 @@ class TestCanonicalNamesAgainstRealCatalog:
     """Verify canonical-name generation against the packaged catalog."""
 
     def test_no_empty_names_and_no_braces_leak(self) -> None:
-        df = pysdp.get_catalog(deprecated=None)
+        df = pysdp.get_catalog(include_deprecated=True)
         for _, row in df.iterrows():
             name = _canonical_variable_name(str(row["Data.URL"]), str(row["CatalogID"]))
             assert name, f"empty name for {row['CatalogID']}"
@@ -396,7 +396,7 @@ class TestNetwork:
 
     def test_open_url_direct(self) -> None:
         """url= branch: load a known Single SDP COG directly, no catalog lookup."""
-        df = pysdp.get_catalog(deprecated=None)
+        df = pysdp.get_catalog(include_deprecated=True)
         row = df[df["TimeSeriesType"] == "Single"].iloc[0]
         ds = pysdp.open_raster(url=row["Data.URL"], verbose=False)
         assert isinstance(ds, xr.Dataset)

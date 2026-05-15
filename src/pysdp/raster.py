@@ -20,7 +20,7 @@ import xarray as xr
 
 from pysdp._catalog_data import lookup_catalog_row
 from pysdp._resolve import TimeSlices, resolve_time_slices
-from pysdp._validate import validate_args_vs_type, validate_user_args
+from pysdp._validate import validate_args_vs_type, validate_user_args, warn_if_deprecated
 from pysdp.constants import SDP_CRS, VSICURL_PREFIX
 from pysdp.io.vsicurl import ensure_gdal_defaults
 
@@ -342,6 +342,7 @@ def open_raster(
         # so the resolver + dataset builder can be typed against a simple
         # Mapping and also accept plain-dict fixtures in unit tests.
         cat_line: dict[str, Any] = dict(lookup_catalog_row(catalog_id))
+        warn_if_deprecated(cat_line)
         ts_type = str(cat_line["TimeSeriesType"])
         validate_args_vs_type(
             ts_type,

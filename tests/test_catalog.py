@@ -149,13 +149,13 @@ class TestGetCatalogPackaged:
         assert set(ug["Domain"].unique()) == {"UG"}
         assert len(ug) < len(all_rows)
 
-    def test_deprecated_false_excludes_deprecated(self) -> None:
-        df = pysdp.get_catalog(source="packaged", deprecated=False)
+    def test_include_deprecated_false_excludes_deprecated(self) -> None:
+        df = pysdp.get_catalog(source="packaged", include_deprecated=False)
         assert not df["Deprecated"].any()
 
     def test_all_constants_are_represented(self) -> None:
         """Sanity check: every value in TYPES/DOMAINS should appear at least once."""
-        df = pysdp.get_catalog(deprecated=None, source="packaged")
+        df = pysdp.get_catalog(include_deprecated=True, source="packaged")
         assert set(df["Domain"].unique()).issubset(set(DOMAINS))
         assert set(df["Type"].unique()).issubset(set(TYPES))
         assert set(df["TimeSeriesType"].unique()).issubset(set(TIMESERIES_TYPES))
@@ -190,7 +190,7 @@ class TestGetMetadataFetch:
     def test_as_dict(self) -> None:
         # Find a real catalog_id + its Metadata.URL from the packaged snapshot,
         # then mock the HTTP response with a tiny XML document.
-        df = pysdp.get_catalog(deprecated=None, source="packaged")
+        df = pysdp.get_catalog(include_deprecated=True, source="packaged")
         row = df.iloc[0]
         xml = b"<?xml version='1.0'?><qgis><title>Test</title></qgis>"
         responses.add(responses.GET, row["Metadata.URL"], body=xml, status=200)
@@ -199,7 +199,7 @@ class TestGetMetadataFetch:
 
     @responses.activate
     def test_as_element(self) -> None:
-        df = pysdp.get_catalog(deprecated=None, source="packaged")
+        df = pysdp.get_catalog(include_deprecated=True, source="packaged")
         row = df.iloc[0]
         xml = b"<?xml version='1.0'?><qgis><title>Test</title></qgis>"
         responses.add(responses.GET, row["Metadata.URL"], body=xml, status=200)
@@ -231,7 +231,7 @@ class TestNetwork:
         assert isinstance(cat, pystac.Catalog)
 
     def test_metadata_real(self) -> None:
-        df = pysdp.get_catalog(deprecated=None)
+        df = pysdp.get_catalog(include_deprecated=True)
         cat_id = df.iloc[0]["CatalogID"]
         meta = pysdp.get_metadata(cat_id)
         assert isinstance(meta, dict)

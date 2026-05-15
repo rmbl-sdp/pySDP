@@ -173,7 +173,9 @@ class TestResolveWeekly:
 
 class TestGetDates:
     def test_yearly_product(self) -> None:
-        dates = get_dates("R4D001")
+        # R6D007 is the current snow-persistence yearly product (replaces R4D001
+        # since the 05/15/2026 catalog snapshot).
+        dates = get_dates("R6D007")
         assert all(isinstance(d, datetime.date) for d in dates)
         assert len(dates) > 5
 

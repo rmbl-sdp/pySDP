@@ -125,7 +125,7 @@ tmax = pysdp.open_raster("R4D004", date_start="2021-01-01", date_end="2021-12-31
 
 ```python
 # Construct the Data.URLs yourself from the catalog template
-row = pysdp.get_catalog(deprecated=None).query("CatalogID == 'R4D004'").iloc[0]
+row = pysdp.get_catalog(include_deprecated=True).query("CatalogID == 'R4D004'").iloc[0]
 urls = [row["Data.URL"].format(year=2021, day=f"{i:03d}") for i in range(1, 8)]
 pysdp.download(urls=urls, output_dir="~/tmax-week")
 ```
@@ -135,7 +135,7 @@ pysdp.download(urls=urls, output_dir="~/tmax-week")
 The SDP bucket is public, so this usually indicates a deprecated product URL that's been removed. Check:
 
 ```python
-pysdp.get_catalog(deprecated=None).query("CatalogID == 'YOUR_ID'")[["Product", "Deprecated"]]
+pysdp.get_catalog(include_deprecated=True).query("CatalogID == 'YOUR_ID'")[["Product", "Deprecated"]]
 ```
 
 ## Performance envelope

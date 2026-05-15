@@ -13,6 +13,7 @@ from pysdp._catalog_data import (
     load_packaged_catalog,
     lookup_catalog_row,
 )
+from pysdp._validate import warn_if_deprecated
 from pysdp.constants import (
     DOMAINS,
     RELEASES,
@@ -25,6 +26,41 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import pystac
+
+
+# Sentinel for detecting whether the legacy `deprecated=` kwarg was passed
+# explicitly (None is a meaningful value, so we can't use it as the default).
+_UNSET: Any = object()
+
+
+def _resolve_deprecated_filter(
+    *,
+    deprecated: bool | None | Any,
+    include_deprecated: bool,
+) -> bool | None:
+    """Resolve the legacy/new kwargs into the internal `deprecated` filter.
+
+    Internal filter semantics (matches rSDP / pre-0.5 pySDP):
+      - ``False``: only current rows.
+      - ``True``: only deprecated rows.
+      - ``None``: both.
+
+    Public API mapping:
+      - ``include_deprecated=False`` (default) → only current.
+      - ``include_deprecated=True``           → both.
+      - Legacy ``deprecated=`` is honored verbatim (warns).
+    """
+    if deprecated is _UNSET:
+        return None if include_deprecated else False
+    warnings.warn(
+        "`deprecated=` is deprecated and will be removed in a future release; "
+        "use `include_deprecated=` instead. Note the semantic change: "
+        "`include_deprecated=True` returns BOTH current and deprecated rows. "
+        "To get deprecated rows only, filter the result on the `Deprecated` column.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+    return deprecated
 
 
 def _validate_filter(values: Sequence[str] | None, valid: tuple[str, ...], name: str) -> None:
@@ -69,8 +105,9 @@ def get_catalog(
     types: Sequence[str] | None = None,
     releases: Sequence[str] | None = None,
     timeseries_types: Sequence[str] | None = None,
-    deprecated: bool | None = False,
+    deprecated: bool | None | Any = _UNSET,
     *,
+    include_deprecated: bool = False,
     source: Literal["packaged", "live", "stac"] = "packaged",
 ) -> pd.DataFrame | pystac.Catalog:
     """Discover SDP datasets by filtering the product catalog.
@@ -99,9 +136,15 @@ def get_catalog(
         One or more of ``"Single"``, ``"Yearly"``, ``"Monthly"``,
         ``"Daily"``, ``"Seasonal"``. See ``pysdp.TIMESERIES_TYPES``.
         ``None`` returns all.
-    deprecated : bool or None, default False
-        ``False`` returns only current datasets. ``True`` returns only
-        deprecated ones. ``None`` returns both.
+    include_deprecated : bool, default False
+        If ``False`` (default), deprecated datasets are hidden. Set
+        ``True`` to include them alongside current datasets; consult the
+        ``NewVersionID`` column to find the recommended replacement.
+    deprecated : bool or None, optional
+        .. deprecated:: 0.5
+           Use ``include_deprecated`` instead. Accepted for backward
+           compatibility: ``False``=current only, ``True``=deprecated only,
+           ``None``=both. Emits ``DeprecationWarning``.
     source : {"packaged", "live", "stac"}, default "packaged"
         Where to pull the catalog from. See Notes.
 
@@ -158,7 +201,7 @@ def get_catalog(
 
     Return both current and deprecated entries:
 
-    >>> all_rows = pysdp.get_catalog(deprecated=None)  # doctest: +SKIP
+    >>> all_rows = pysdp.get_catalog(include_deprecated=True)  # doctest: +SKIP
 
     See Also
     --------
@@ -189,13 +232,16 @@ def get_catalog(
     else:
         raise ValueError(f"Unknown source: {source!r}. Must be 'packaged', 'live', or 'stac'.")
 
+    deprecated_filter = _resolve_deprecated_filter(
+        deprecated=deprecated, include_deprecated=include_deprecated
+    )
     return _apply_filters(
         df,
         domains=domains,
         types=types,
         releases=releases,
         timeseries_types=timeseries_types,
-        deprecated=deprecated,
+        deprecated=deprecated_filter,
     )
 
 
@@ -254,6 +300,7 @@ def get_metadata(
     import requests
 
     row = lookup_catalog_row(catalog_id)
+    warn_if_deprecated(row)
     resp = requests.get(row["Metadata.URL"], timeout=30)
     resp.raise_for_status()
 
