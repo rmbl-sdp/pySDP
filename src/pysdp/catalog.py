@@ -108,6 +108,7 @@ def get_catalog(
     deprecated: bool | None | Any = _UNSET,
     *,
     include_deprecated: bool = False,
+    with_issue_counts: bool = False,
     source: Literal["packaged", "live", "stac"] = "packaged",
 ) -> pd.DataFrame | pystac.Catalog:
     """Discover SDP datasets by filtering the product catalog.
@@ -145,6 +146,12 @@ def get_catalog(
            Use ``include_deprecated`` instead. Accepted for backward
            compatibility: ``False``=current only, ``True``=deprecated only,
            ``None``=both. Emits ``DeprecationWarning``.
+    with_issue_counts : bool, default False
+        If ``True``, attach an ``OpenIssues`` column with the count of
+        open data-quality issues per dataset (from
+        ``rmbl-sdp/sdp-products``). Off by default to avoid a network
+        round-trip on every catalog call; uses :func:`pysdp.known_issues`'s
+        on-disk cache once warm.
     source : {"packaged", "live", "stac"}, default "packaged"
         Where to pull the catalog from. See Notes.
 
@@ -235,7 +242,7 @@ def get_catalog(
     deprecated_filter = _resolve_deprecated_filter(
         deprecated=deprecated, include_deprecated=include_deprecated
     )
-    return _apply_filters(
+    out = _apply_filters(
         df,
         domains=domains,
         types=types,
@@ -243,6 +250,26 @@ def get_catalog(
         timeseries_types=timeseries_types,
         deprecated=deprecated_filter,
     )
+    if with_issue_counts:
+        out = _attach_issue_counts(out)
+    return out
+
+
+def _attach_issue_counts(df: pd.DataFrame) -> pd.DataFrame:
+    """Left-join open-issue counts onto a filtered catalog DataFrame.
+
+    Always produces an ``OpenIssues`` column of dtype ``Int64`` with zero
+    where no issues are known. Failures inside ``open_issue_counts()``
+    (offline + no cache) surface as an all-zero column rather than
+    bubbling up.
+    """
+    from pysdp.issues import open_issue_counts
+
+    counts = open_issue_counts()
+    merged = df.merge(counts, on="CatalogID", how="left")
+    merged["OpenIssues"] = merged["OpenIssues"].fillna(0).astype("Int64")
+    merged.attrs.update(df.attrs)
+    return merged
 
 
 def get_metadata(

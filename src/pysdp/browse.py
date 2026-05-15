@@ -38,13 +38,16 @@ def _card_html(row: pd.Series, width: int) -> str:
     """Render one product card using only HTML attributes (no inline style)."""
     import pandas as pd
 
-    cat_id = escape(str(row.get("CatalogID", "")))
+    from pysdp.issues import issues_search_url
+
+    cat_id_raw = str(row.get("CatalogID", ""))
+    cat_id = escape(cat_id_raw)
     product = escape(str(row.get("Product", "")))
     domain = escape(str(row.get("Domain", "")))
     resolution = escape(str(row.get("Resolution", "")))
     ts_type = escape(str(row.get("TimeSeriesType", "")))
     thumb = escape(str(row.get("Thumbnail.URL", "")))
-    browser_link = escape(_browser_url(str(row.get("CatalogID", ""))))
+    browser_link = escape(_browser_url(cat_id_raw))
     open_call = f'pysdp.open_raster("{cat_id}")'
 
     is_deprecated = bool(row.get("Deprecated", False))
@@ -58,6 +61,23 @@ def _card_html(row: pd.Series, width: int) -> str:
         deprecated_badge = ""
         card_bg = "#f8f8f8"
 
+    open_issues_raw = row.get("OpenIssues")
+    try:
+        open_issues = (
+            0 if open_issues_raw is None or pd.isna(open_issues_raw) else int(open_issues_raw)
+        )
+    except (TypeError, ValueError):
+        open_issues = 0
+    if open_issues > 0:
+        plural = "" if open_issues == 1 else "s"
+        issue_url = escape(issues_search_url(cat_id_raw))
+        issues_badge = (
+            f'<small><a href="{issue_url}" target="_blank">'
+            f"⚠ {open_issues} open issue{plural}</a></small><br>"
+        )
+    else:
+        issues_badge = ""
+
     return (
         f'<td width="{width}" valign="top" bgcolor="{card_bg}">'
         f'<img src="{thumb}" width="{width - 10}" alt="{cat_id}" loading="lazy"><br>'
@@ -65,6 +85,7 @@ def _card_html(row: pd.Series, width: int) -> str:
         f"{product}<br>"
         f"<small>{domain} &middot; {resolution} &middot; {ts_type}</small><br>"
         f"{deprecated_badge}"
+        f"{issues_badge}"
         f'<a href="{browser_link}" target="_blank">SDP Browser &nearr;</a><br>'
         f"<code>{escape(open_call)}</code>"
         f"</td>"
@@ -121,6 +142,7 @@ def browse(
     deprecated: bool | None | Any = _UNSET,
     *,
     include_deprecated: bool = False,
+    with_issue_counts: bool = False,
     columns: int = 4,
     width: int = 220,
     source: Literal["packaged", "live"] = "packaged",
@@ -144,6 +166,10 @@ def browse(
     deprecated : bool or None, optional
         .. deprecated:: 0.5
            Use ``include_deprecated`` instead.
+    with_issue_counts : bool, default False
+        If ``True``, fetch open issue counts from
+        ``rmbl-sdp/sdp-products`` (cached for one hour) and render a
+        "⚠ N open issues" badge on affected cards.
     columns : int, default 4
         Number of columns in the grid.
     width : int, default 220
@@ -197,6 +223,7 @@ def browse(
             releases=releases,
             timeseries_types=timeseries_types,
             source=source,
+            with_issue_counts=with_issue_counts,
             **get_catalog_kwargs,
         ),
     )

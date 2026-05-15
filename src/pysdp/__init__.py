@@ -19,6 +19,7 @@ from pysdp.constants import DOMAINS, RELEASES, SDP_CRS, TIMESERIES_TYPES, TYPES
 from pysdp.dates import get_dates
 from pysdp.download import download
 from pysdp.extract import extract_points, extract_polygons
+from pysdp.issues import known_issues, report_issue
 from pysdp.raster import open_raster, open_stack
 
 __all__ = [
@@ -35,6 +36,8 @@ __all__ = [
     "get_catalog",
     "get_dates",
     "get_metadata",
+    "known_issues",
     "open_raster",
     "open_stack",
+    "report_issue",
 ]
