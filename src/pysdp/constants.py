@@ -38,6 +38,7 @@ RELEASES: Final[tuple[str, ...]] = (
     "Release4",
     "Release5",
     "Release6",
+    "Release7",
 )
 """Dataset release cohorts."""
 

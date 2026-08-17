@@ -23,7 +23,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 DEFAULT_URL = (
-    "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/SDP_product_table_05_15_2026.csv"
+    "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/SDP_product_table_08_17_2026.csv"
 )
 FILENAME_RE = re.compile(r"^SDP_product_table_\d{2}_\d{2}_\d{4}\.csv$")
 DATA_DIR = Path(__file__).resolve().parent.parent / "src" / "pysdp" / "data"

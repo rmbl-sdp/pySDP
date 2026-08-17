@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-17
+
+### Added
+- **Release 7 data products** — packaged catalog snapshot updated to
+  `SDP_product_table_08_17_2026.csv` (177 rows, up from 164). 13 new
+  Gothic Townsite datasets (`R7D001`–`R7D013`): land surface
+  temperature (seasonal means, monthly climatology, principal
+  components, weekly irregular time series) and UAS-derived
+  surface/canopy structure (5 cm DEM, yearly DSMs, canopy height).
+- `Release7` added to `pysdp.constants.RELEASES`.
+- Baked date manifest for `R7D006` (weekly GT land surface
+  temperature, 113 dates) for offline date discovery.
+
+### Changed
+- `R6D004` (5 cm GT DEM) is deprecated upstream in favor of `R7D002`;
+  the existing deprecation warnings apply.
+- Upstream metadata cleanup: catalog `MinDate`/`MaxDate` now use
+  4-digit years consistently; Release 6 snow products carry corrected
+  `Type = "Snow"` categories.
+
 ## [0.6.0] - 2026-05-15
 
 ### Added

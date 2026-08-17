@@ -139,6 +139,21 @@ def _validate_required_url_fields(df: pd.DataFrame) -> None:
         raise ValueError("Catalog is missing required URL fields:\n  " + "\n  ".join(parts))
 
 
+def _validate_unique_catalog_ids(df: pd.DataFrame) -> None:
+    """Raise ValueError if any CatalogID appears more than once.
+
+    A fill-down slip in the source spreadsheet once published a table with
+    three rows sharing one CatalogID, silently shadowing two products and
+    dangling the NewVersionID references that pointed at them. Mirrors the
+    guardrails in rSDP's `data-raw/SDP_catalog.R` and
+    `stac-gen/lib/catalog_loader.py`.
+    """
+    dup_mask = df["CatalogID"].duplicated(keep=False)
+    if dup_mask.any():
+        dups = sorted(df.loc[dup_mask, "CatalogID"].unique())
+        raise ValueError(f"Duplicate CatalogIDs in catalog: {', '.join(dups)}")
+
+
 def _read_catalog_csv(buffer: io.BytesIO) -> pd.DataFrame:
     import pandas as pd
 
@@ -167,6 +182,7 @@ def _read_catalog_csv(buffer: io.BytesIO) -> pd.DataFrame:
         df["NewVersionID"] = pd.Series([pd.NA] * len(df), dtype="string")
 
     _validate_required_url_fields(df)
+    _validate_unique_catalog_ids(df)
     df["MinDate"] = _parse_sdp_dates(df["MinDate"])
     df["MaxDate"] = _parse_sdp_dates(df["MaxDate"])
     df["Thumbnail.URL"] = df.apply(_derive_thumbnail_url, axis=1)

@@ -1,0 +1,567 @@
+[
+  {
+    "start": "2022-03-01",
+    "end": "2022-03-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220301_25cm_v1.tif"
+  },
+  {
+    "start": "2022-03-26",
+    "end": "2022-03-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220326_25cm_v1.tif"
+  },
+  {
+    "start": "2022-04-08",
+    "end": "2022-04-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220408_25cm_v1.tif"
+  },
+  {
+    "start": "2022-04-21",
+    "end": "2022-04-21",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220421_25cm_v1.tif"
+  },
+  {
+    "start": "2022-04-30",
+    "end": "2022-04-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220430_25cm_v1.tif"
+  },
+  {
+    "start": "2022-05-10",
+    "end": "2022-05-10",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220510_25cm_v1.tif"
+  },
+  {
+    "start": "2022-05-17",
+    "end": "2022-05-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220517_25cm_v1.tif"
+  },
+  {
+    "start": "2022-05-25",
+    "end": "2022-05-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220525_25cm_v1.tif"
+  },
+  {
+    "start": "2022-05-31",
+    "end": "2022-05-31",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220531_25cm_v1.tif"
+  },
+  {
+    "start": "2022-06-10",
+    "end": "2022-06-10",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220610_25cm_v1.tif"
+  },
+  {
+    "start": "2022-06-15",
+    "end": "2022-06-15",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220615_25cm_v1.tif"
+  },
+  {
+    "start": "2022-06-20",
+    "end": "2022-06-20",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220620_25cm_v1.tif"
+  },
+  {
+    "start": "2022-07-01",
+    "end": "2022-07-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220701_25cm_v1.tif"
+  },
+  {
+    "start": "2022-07-09",
+    "end": "2022-07-09",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220709_25cm_v1.tif"
+  },
+  {
+    "start": "2022-07-15",
+    "end": "2022-07-15",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220715_25cm_v1.tif"
+  },
+  {
+    "start": "2022-07-20",
+    "end": "2022-07-20",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220720_25cm_v1.tif"
+  },
+  {
+    "start": "2022-07-28",
+    "end": "2022-07-28",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220728_25cm_v1.tif"
+  },
+  {
+    "start": "2022-08-04",
+    "end": "2022-08-04",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220804_25cm_v1.tif"
+  },
+  {
+    "start": "2022-08-09",
+    "end": "2022-08-09",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220809_25cm_v1.tif"
+  },
+  {
+    "start": "2022-08-18",
+    "end": "2022-08-18",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220818_25cm_v1.tif"
+  },
+  {
+    "start": "2022-09-01",
+    "end": "2022-09-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220901_25cm_v1.tif"
+  },
+  {
+    "start": "2022-09-13",
+    "end": "2022-09-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220913_25cm_v1.tif"
+  },
+  {
+    "start": "2022-09-19",
+    "end": "2022-09-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220919_25cm_v1.tif"
+  },
+  {
+    "start": "2022-09-26",
+    "end": "2022-09-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20220926_25cm_v1.tif"
+  },
+  {
+    "start": "2022-10-05",
+    "end": "2022-10-05",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20221005_25cm_v1.tif"
+  },
+  {
+    "start": "2022-10-17",
+    "end": "2022-10-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20221017_25cm_v1.tif"
+  },
+  {
+    "start": "2022-10-28",
+    "end": "2022-10-28",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20221028_25cm_v1.tif"
+  },
+  {
+    "start": "2023-02-02",
+    "end": "2023-02-02",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230202_25cm_v1.tif"
+  },
+  {
+    "start": "2023-03-07",
+    "end": "2023-03-07",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230307_25cm_v1.tif"
+  },
+  {
+    "start": "2023-04-07",
+    "end": "2023-04-07",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230407_25cm_v1.tif"
+  },
+  {
+    "start": "2023-05-09",
+    "end": "2023-05-09",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230509_25cm_v1.tif"
+  },
+  {
+    "start": "2023-05-16",
+    "end": "2023-05-16",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230516_25cm_v1.tif"
+  },
+  {
+    "start": "2023-05-23",
+    "end": "2023-05-23",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230523_25cm_v1.tif"
+  },
+  {
+    "start": "2023-05-30",
+    "end": "2023-05-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230530_25cm_v1.tif"
+  },
+  {
+    "start": "2023-06-06",
+    "end": "2023-06-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230606_25cm_v1.tif"
+  },
+  {
+    "start": "2023-06-13",
+    "end": "2023-06-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230613_25cm_v1.tif"
+  },
+  {
+    "start": "2023-06-19",
+    "end": "2023-06-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230619_25cm_v1.tif"
+  },
+  {
+    "start": "2023-06-26",
+    "end": "2023-06-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230626_25cm_v1.tif"
+  },
+  {
+    "start": "2023-07-03",
+    "end": "2023-07-03",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230703_25cm_v1.tif"
+  },
+  {
+    "start": "2023-07-11",
+    "end": "2023-07-11",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230711_25cm_v1.tif"
+  },
+  {
+    "start": "2023-07-18",
+    "end": "2023-07-18",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230718_25cm_v1.tif"
+  },
+  {
+    "start": "2023-07-25",
+    "end": "2023-07-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230725_25cm_v1.tif"
+  },
+  {
+    "start": "2023-08-01",
+    "end": "2023-08-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230801_25cm_v1.tif"
+  },
+  {
+    "start": "2023-08-14",
+    "end": "2023-08-14",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230814_25cm_v1.tif"
+  },
+  {
+    "start": "2023-08-21",
+    "end": "2023-08-21",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230821_25cm_v1.tif"
+  },
+  {
+    "start": "2023-08-28",
+    "end": "2023-08-28",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230828_25cm_v1.tif"
+  },
+  {
+    "start": "2023-09-07",
+    "end": "2023-09-07",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230907_25cm_v1.tif"
+  },
+  {
+    "start": "2023-09-13",
+    "end": "2023-09-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230913_25cm_v1.tif"
+  },
+  {
+    "start": "2023-09-20",
+    "end": "2023-09-20",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230920_25cm_v1.tif"
+  },
+  {
+    "start": "2023-09-25",
+    "end": "2023-09-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20230925_25cm_v1.tif"
+  },
+  {
+    "start": "2023-10-03",
+    "end": "2023-10-03",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20231003_25cm_v1.tif"
+  },
+  {
+    "start": "2023-10-10",
+    "end": "2023-10-10",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20231010_25cm_v1.tif"
+  },
+  {
+    "start": "2023-10-17",
+    "end": "2023-10-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20231017_25cm_v1.tif"
+  },
+  {
+    "start": "2023-10-25",
+    "end": "2023-10-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20231025_25cm_v1.tif"
+  },
+  {
+    "start": "2023-11-02",
+    "end": "2023-11-02",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20231102_25cm_v1.tif"
+  },
+  {
+    "start": "2023-11-15",
+    "end": "2023-11-15",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20231115_25cm_v1.tif"
+  },
+  {
+    "start": "2023-12-15",
+    "end": "2023-12-15",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20231215_25cm_v1.tif"
+  },
+  {
+    "start": "2024-01-31",
+    "end": "2024-01-31",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240131_25cm_v1.tif"
+  },
+  {
+    "start": "2024-02-29",
+    "end": "2024-02-29",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240229_25cm_v1.tif"
+  },
+  {
+    "start": "2024-04-02",
+    "end": "2024-04-02",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240402_25cm_v1.tif"
+  },
+  {
+    "start": "2024-04-25",
+    "end": "2024-04-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240425_25cm_v1.tif"
+  },
+  {
+    "start": "2024-05-02",
+    "end": "2024-05-02",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240502_25cm_v1.tif"
+  },
+  {
+    "start": "2024-05-08",
+    "end": "2024-05-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240508_25cm_v1.tif"
+  },
+  {
+    "start": "2024-05-17",
+    "end": "2024-05-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240517_25cm_v1.tif"
+  },
+  {
+    "start": "2024-05-30",
+    "end": "2024-05-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240530_25cm_v1.tif"
+  },
+  {
+    "start": "2024-06-06",
+    "end": "2024-06-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240606_25cm_v1.tif"
+  },
+  {
+    "start": "2024-06-10",
+    "end": "2024-06-10",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240610_25cm_v1.tif"
+  },
+  {
+    "start": "2024-06-19",
+    "end": "2024-06-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240619_25cm_v1.tif"
+  },
+  {
+    "start": "2024-06-26",
+    "end": "2024-06-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240626_25cm_v1.tif"
+  },
+  {
+    "start": "2024-07-03",
+    "end": "2024-07-03",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240703_25cm_v1.tif"
+  },
+  {
+    "start": "2024-07-10",
+    "end": "2024-07-10",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240710_25cm_v1.tif"
+  },
+  {
+    "start": "2024-07-17",
+    "end": "2024-07-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240717_25cm_v1.tif"
+  },
+  {
+    "start": "2024-07-23",
+    "end": "2024-07-23",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240723_25cm_v1.tif"
+  },
+  {
+    "start": "2024-07-31",
+    "end": "2024-07-31",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240731_25cm_v1.tif"
+  },
+  {
+    "start": "2024-08-06",
+    "end": "2024-08-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240806_25cm_v1.tif"
+  },
+  {
+    "start": "2024-08-19",
+    "end": "2024-08-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240819_25cm_v1.tif"
+  },
+  {
+    "start": "2024-08-26",
+    "end": "2024-08-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240826_25cm_v1.tif"
+  },
+  {
+    "start": "2024-09-05",
+    "end": "2024-09-05",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240905_25cm_v1.tif"
+  },
+  {
+    "start": "2024-09-13",
+    "end": "2024-09-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240913_25cm_v1.tif"
+  },
+  {
+    "start": "2024-09-19",
+    "end": "2024-09-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240919_25cm_v1.tif"
+  },
+  {
+    "start": "2024-09-24",
+    "end": "2024-09-24",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20240924_25cm_v1.tif"
+  },
+  {
+    "start": "2024-10-01",
+    "end": "2024-10-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20241001_25cm_v1.tif"
+  },
+  {
+    "start": "2024-10-08",
+    "end": "2024-10-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20241008_25cm_v1.tif"
+  },
+  {
+    "start": "2024-10-14",
+    "end": "2024-10-14",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20241014_25cm_v1.tif"
+  },
+  {
+    "start": "2024-10-25",
+    "end": "2024-10-25",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20241025_25cm_v1.tif"
+  },
+  {
+    "start": "2024-11-11",
+    "end": "2024-11-11",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20241111_25cm_v1.tif"
+  },
+  {
+    "start": "2025-04-16",
+    "end": "2025-04-16",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250416_25cm_v1.tif"
+  },
+  {
+    "start": "2025-04-24",
+    "end": "2025-04-24",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250424_25cm_v1.tif"
+  },
+  {
+    "start": "2025-04-30",
+    "end": "2025-04-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250430_25cm_v1.tif"
+  },
+  {
+    "start": "2025-05-08",
+    "end": "2025-05-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250508_25cm_v1.tif"
+  },
+  {
+    "start": "2025-05-12",
+    "end": "2025-05-12",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250512_25cm_v1.tif"
+  },
+  {
+    "start": "2025-05-21",
+    "end": "2025-05-21",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250521_25cm_v1.tif"
+  },
+  {
+    "start": "2025-05-27",
+    "end": "2025-05-27",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250527_25cm_v1.tif"
+  },
+  {
+    "start": "2025-06-04",
+    "end": "2025-06-04",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250604_25cm_v1.tif"
+  },
+  {
+    "start": "2025-06-13",
+    "end": "2025-06-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250613_25cm_v1.tif"
+  },
+  {
+    "start": "2025-06-19",
+    "end": "2025-06-19",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250619_25cm_v1.tif"
+  },
+  {
+    "start": "2025-06-26",
+    "end": "2025-06-26",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250626_25cm_v1.tif"
+  },
+  {
+    "start": "2025-07-06",
+    "end": "2025-07-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250706_25cm_v1.tif"
+  },
+  {
+    "start": "2025-07-11",
+    "end": "2025-07-11",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250711_25cm_v1.tif"
+  },
+  {
+    "start": "2025-07-17",
+    "end": "2025-07-17",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250717_25cm_v1.tif"
+  },
+  {
+    "start": "2025-07-29",
+    "end": "2025-07-29",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250729_25cm_v1.tif"
+  },
+  {
+    "start": "2025-08-07",
+    "end": "2025-08-07",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250807_25cm_v1.tif"
+  },
+  {
+    "start": "2025-08-13",
+    "end": "2025-08-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250813_25cm_v1.tif"
+  },
+  {
+    "start": "2025-08-22",
+    "end": "2025-08-22",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250822_25cm_v1.tif"
+  },
+  {
+    "start": "2025-09-01",
+    "end": "2025-09-01",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250901_25cm_v1.tif"
+  },
+  {
+    "start": "2025-09-08",
+    "end": "2025-09-08",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250908_25cm_v1.tif"
+  },
+  {
+    "start": "2025-09-18",
+    "end": "2025-09-18",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250918_25cm_v1.tif"
+  },
+  {
+    "start": "2025-09-29",
+    "end": "2025-09-29",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20250929_25cm_v1.tif"
+  },
+  {
+    "start": "2025-10-06",
+    "end": "2025-10-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20251006_25cm_v1.tif"
+  },
+  {
+    "start": "2025-10-21",
+    "end": "2025-10-21",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20251021_25cm_v1.tif"
+  },
+  {
+    "start": "2025-10-30",
+    "end": "2025-10-30",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20251030_25cm_v1.tif"
+  },
+  {
+    "start": "2025-11-06",
+    "end": "2025-11-06",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20251106_25cm_v1.tif"
+  },
+  {
+    "start": "2025-11-13",
+    "end": "2025-11-13",
+    "url": "https://rmbl-sdp.s3.us-east-2.amazonaws.com/data_products/released/release7/GT_LST_weekly_25cm_v1/GT_LST_20251113_25cm_v1.tif"
+  }
+]

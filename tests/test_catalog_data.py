@@ -14,9 +14,21 @@ from pysdp._catalog_data import (
     _emit_staleness_warning_if_needed,
     _parse_sdp_dates,
     _staleness_months_threshold,
+    _validate_unique_catalog_ids,
     load_packaged_catalog,
     snapshot_date,
 )
+
+
+class TestValidateUniqueCatalogIds:
+    def test_passes_unique_ids(self) -> None:
+        df = pd.DataFrame({"CatalogID": ["R6D006", "R6D007", "R6D008"]})
+        _validate_unique_catalog_ids(df)  # should not raise
+
+    def test_rejects_duplicates(self) -> None:
+        df = pd.DataFrame({"CatalogID": ["R6D006", "R6D006", "R6D006", "R6D007"]})
+        with pytest.raises(ValueError, match="Duplicate CatalogIDs.*R6D006"):
+            _validate_unique_catalog_ids(df)
 
 
 class TestSnapshotDate:
